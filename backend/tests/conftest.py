@@ -1,3 +1,4 @@
+import inspect
 import os
 import re
 
@@ -20,7 +21,8 @@ from app.services.redis import redis  # noqa: E402
 def pytest_collection_modifyitems(items):
     # Barcha testlar bitta event loop'da — DB va Redis ulanishlari loop'lar orasida buzilmasin
     for item in items:
-        item.add_marker(pytest.mark.asyncio(loop_scope="session"), append=False)
+        if inspect.iscoroutinefunction(getattr(item, "obj", None)):
+            item.add_marker(pytest.mark.asyncio(loop_scope="session"), append=False)
 
 
 @pytest.fixture(scope="session", autouse=True)

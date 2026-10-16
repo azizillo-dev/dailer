@@ -2,10 +2,20 @@ from fastapi import APIRouter
 
 from app.api.deps import DB, CurrentUser
 from app.core.security import now
+from app.models import User
 from app.schemas.user import MeOut, OnboardingIn, ProfileUpdateIn
 from app.services.users import to_me
 
 router = APIRouter(prefix="/me", tags=["me"])
+
+
+def _apply(user: User, body: ProfileUpdateIn) -> None:
+    data = body.model_dump(exclude_unset=True)
+    if "busy_blocks" in data:
+        # JSONB'ga vaqtlar matn ko'rinishida yoziladi
+        data["busy_blocks"] = [b.model_dump(mode="json") for b in body.busy_blocks or []]
+    for field, value in data.items():
+        setattr(user.profile, field, value)
 
 
 @router.get("", response_model=MeOut)
@@ -15,8 +25,7 @@ async def get_me(user: CurrentUser):
 
 @router.patch("/profile", response_model=MeOut)
 async def update_profile(body: ProfileUpdateIn, user: CurrentUser, db: DB):
-    for field, value in body.model_dump(exclude_unset=True).items():
-        setattr(user.profile, field, value)
+    _apply(user, body)
     await db.commit()
     await db.refresh(user)
     return to_me(user)
@@ -24,11 +33,10 @@ async def update_profile(body: ProfileUpdateIn, user: CurrentUser, db: DB):
 
 @router.post("/onboarding", response_model=MeOut)
 async def complete_onboarding(body: OnboardingIn, user: CurrentUser, db: DB):
-    for field, value in body.model_dump(exclude_unset=True).items():
-        setattr(user.profile, field, value)
+    _apply(user, body)
     if user.profile.onboarding_completed_at is None:
         user.profile.onboarding_completed_at = now()
     await db.commit()
     await db.refresh(user)
-    # Keyingi qadam: AI shu javoblardan birinchi kun tartibini tuzadi (/ai/plan)
+    # Keyingi qadam: GET /routine/starter-plan → foydalanuvchi tasdiqlaydi → /routine-items/bulk
     return to_me(user)

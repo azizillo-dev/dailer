@@ -1,3 +1,16 @@
+from app.models.routine import (
+    AlarmType,
+    Category,
+    Checkin,
+    CheckinSource,
+    CheckinStatus,
+    ExcuseReason,
+    ModeType,
+    PrayerName,
+    RoutineItem,
+    ScheduleMode,
+    TaskTemplate,
+)
 from app.models.user import (
     Device,
     EmailToken,
@@ -16,14 +29,25 @@ from app.models.user import (
 )
 
 __all__ = [
+    "AlarmType",
+    "Category",
+    "Checkin",
+    "CheckinSource",
+    "CheckinStatus",
     "Device",
     "EmailToken",
     "EmailTokenPurpose",
+    "ExcuseReason",
     "Gender",
     "Language",
+    "ModeType",
     "Platform",
+    "PrayerName",
     "Profile",
     "RefreshToken",
+    "RoutineItem",
+    "ScheduleMode",
+    "TaskTemplate",
     "Theme",
     "User",
     "User2FA",

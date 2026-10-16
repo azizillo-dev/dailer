@@ -3,7 +3,7 @@ import logging
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import auth, me
+from app.api.routes import auth, me, routine
 from app.core.config import settings
 from app.core.errors import register_error_handlers
 from app.core.i18n import current_lang, pick_language
@@ -40,6 +40,7 @@ register_error_handlers(app)
 API = "/api/v1"
 app.include_router(auth.router, prefix=API)
 app.include_router(me.router, prefix=API)
+app.include_router(routine.router, prefix=API)
 
 
 @app.get("/health", tags=["system"])

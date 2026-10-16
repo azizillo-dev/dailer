@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, time
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.models import Gender, Language, Theme, UserRole, UserType
 from app.models.user import GoalReminderFreq, Madhab, Privacy
@@ -10,6 +10,20 @@ INTERESTS = {
     "reading", "sport", "language", "quran", "study", "programming",
     "math", "sleep", "health", "prayer", "dhikr", "work",
 }
+
+
+class BusyBlock(BaseModel):
+    label: str = Field(default="", max_length=60)
+    start: time
+    end: time
+    # Hafta kunlari bitmask (Du=1 … Ya=64); default — Du–Ju
+    days: int = Field(default=31, ge=1, le=127)
+
+    @model_validator(mode="after")
+    def order(self):
+        if self.end <= self.start:
+            raise ValueError("end must be after start")
+        return self
 
 
 class ProfileOut(BaseModel):
@@ -35,6 +49,7 @@ class ProfileOut(BaseModel):
     wake_time: time | None
     sleep_time: time | None
     evening_summary_time: time | None
+    busy_blocks: list[dict]
     main_goal: str | None
     goal_reminder_freq: GoalReminderFreq
     share_goal_with_ai: bool
@@ -78,6 +93,7 @@ class ProfileUpdateIn(BaseModel):
     wake_time: time | None = None
     sleep_time: time | None = None
     evening_summary_time: time | None = None
+    busy_blocks: list[BusyBlock] | None = Field(default=None, max_length=6)
     main_goal: str | None = Field(default=None, max_length=1000)
     goal_reminder_freq: GoalReminderFreq | None = None
     share_goal_with_ai: bool | None = None

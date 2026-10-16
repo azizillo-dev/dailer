@@ -156,6 +156,8 @@ class Profile(TimestampMixin, Base):
     wake_time: Mapped[time | None] = mapped_column(Time)
     sleep_time: Mapped[time | None] = mapped_column(Time)
     evening_summary_time: Mapped[time | None] = mapped_column(Time)
+    # Band vaqtlar (darslar, ish): [{"label": "Darslar", "start": "08:00", "end": "12:20", "days": 31}]
+    busy_blocks: Mapped[list] = mapped_column(JSONB, default=list)
 
     # "Eng oliy maqsadingiz?"
     main_goal: Mapped[str | None] = mapped_column(Text)
