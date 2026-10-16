@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { appEn, appRu, appUz, type AppKey } from "./messages-app";
 
 export type Lang = "uz" | "ru" | "en";
 export const LANGS: { code: Lang; label: string }[] = [
@@ -95,8 +96,9 @@ const uz = {
   "error.generic": "Nimadir xato ketdi. Qayta urinib ko'ring.",
 } as const;
 
-export type MessageKey = keyof typeof uz;
-type Messages = Record<MessageKey, string>;
+type BaseKey = keyof typeof uz;
+type Messages = Record<BaseKey, string>;
+export type MessageKey = BaseKey | AppKey;
 
 const ru: Messages = {
   "brand.motto": "Don't forget why you started!",
@@ -246,9 +248,14 @@ const en: Messages = {
   "error.generic": "Something went wrong. Please try again.",
 };
 
-const DICTS: Record<Lang, Messages> = { uz, ru, en };
+const DICTS: Record<Lang, Record<MessageKey, string>> = {
+  uz: { ...uz, ...appUz },
+  ru: { ...ru, ...appRu },
+  en: { ...en, ...appEn },
+};
 
-type Ctx = { lang: Lang; setLang: (l: Lang) => void; t: (k: MessageKey) => string };
+type Vars = Record<string, string | number>;
+type Ctx = { lang: Lang; setLang: (l: Lang) => void; t: (k: MessageKey, vars?: Vars) => string };
 const I18nContext = createContext<Ctx | null>(null);
 
 export function readStoredLang(): Lang {
@@ -278,7 +285,14 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   }, []);
 
-  const t = useCallback((k: MessageKey) => DICTS[lang][k] ?? uz[k], [lang]);
+  const t = useCallback(
+    (k: MessageKey, vars?: Vars) => {
+      let s = DICTS[lang][k] ?? DICTS.uz[k] ?? k;
+      if (vars) for (const [name, v] of Object.entries(vars)) s = s.replaceAll(`{${name}}`, String(v));
+      return s;
+    },
+    [lang],
+  );
 
   return <I18nContext.Provider value={{ lang, setLang, t }}>{children}</I18nContext.Provider>;
 }
