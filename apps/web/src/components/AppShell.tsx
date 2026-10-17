@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarCheck2, ListTodo, LogOut } from "lucide-react";
+import { BarChart3, CalendarCheck2, ListTodo, LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -12,6 +12,7 @@ import { useI18n, type MessageKey } from "@/lib/i18n";
 
 const NAV: { href: string; label: MessageKey; icon: typeof ListTodo }[] = [
   { href: "/today", label: "nav.today", icon: CalendarCheck2 },
+  { href: "/stats", label: "nav.stats", icon: BarChart3 },
   { href: "/routine", label: "nav.routine", icon: ListTodo },
 ];
 
@@ -100,7 +101,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Mobil pastki navigatsiya */}
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden">
-        <div className="mx-auto grid max-w-md grid-cols-2">
+        <div className="mx-auto grid max-w-md" style={{ gridTemplateColumns: `repeat(${NAV.length}, 1fr)` }}>
           {NAV.map((n) => {
             const active = pathname.startsWith(n.href);
             const Icon = n.icon;
