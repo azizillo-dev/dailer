@@ -69,6 +69,24 @@ email tasdiqlangan zahoti super admin roli avtomatik beriladi. Kirgach `/admin` 
 `apps/mobile/app.json` → `extra.apiUrl` = `https://dailer-api.vercel.app` (production build uchun).
 Google bilan kirish va ekran vaqti — native modul: Expo Go'da emas, `npx expo run:android` yoki EAS build'da.
 
+## Android APK (yangi versiya chiqarish)
+
+APK GitHub Releases'da: https://github.com/azizillo-dev/dailer/releases/latest/download/dailer.apk
+(sayt shu "latest" havolani ishlatadi — yangi release chiqqanda sayt o'zgarmaydi).
+
+1. `apps/mobile/app.json` → `version` va `android.versionCode` ni oshiring.
+2. Native loyiha va build (Android SDK `D:\devndroid-sdk`, JDK `D:\dev\jdk`):
+   ```bash
+   cd apps/mobile
+   npx expo prebuild --platform android --clean --no-install
+   # android/gradle.properties: reactNativeArchitectures=armeabi-v7a,arm64-v8a (APK kichik bo'ladi)
+   cd android && ./gradlew assembleRelease     # → app/build/outputs/apk/release/app-release.apk
+   ```
+3. GitHub → Releases → yangi tag (`v1.0.1`), faylni `dailer.apk` nomi bilan yuklang.
+
+Imzo — Expo shablonidagi debug kaliti (SHA-1 `5E:8F:16:...:F6:25`, Google Android client'da shu).
+Play Market'ga chiqishda alohida release kaliti yaratiladi va uning SHA-1 si Google'ga qo'shiladi.
+
 ## Muqobil: Render
 
 `render.yaml` — Render Free + Supabase uchun blueprint (Render'da SMTP yopiq — Brevo kerak).
