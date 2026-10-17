@@ -6,10 +6,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { FormMessage } from "@/components/AuthShell";
-import { api, API_URL, ApiError, getTokens, setTokens, type Me, type TokenPair } from "@/lib/api";
+import { api, setTokens, type Me, type TokenPair } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { errorText } from "@/lib/errors";
-import { LANGS, readStoredLang, useI18n, type MessageKey } from "@/lib/i18n";
+import { LANGS, useI18n, type MessageKey } from "@/lib/i18n";
+import { uploadFile } from "@/lib/upload";
 import { applyTheme, type ThemePref } from "@/lib/theme";
 import { hm, PRAYERS } from "@/lib/types";
 
@@ -146,24 +147,7 @@ function ProfileView() {
     setUploading(true);
     setError("");
     try {
-      const form = new FormData();
-      form.append("file", file);
-      // multipart — JSON klienti emas, to'g'ridan-to'g'ri fetch
-      const send = () =>
-        fetch(`${API_URL}/api/v1/me/avatar`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${getTokens()?.access_token ?? ""}`, "Accept-Language": readStoredLang() },
-          body: form,
-        });
-      let res = await send();
-      if (res.status === 401) {
-        await api("/api/v1/me", { auth: true }); // refresh tokenni yangilaydi
-        res = await send();
-      }
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new ApiError(res.status, data?.error?.code ?? "unknown", data?.error?.message ?? "");
-      }
+      await uploadFile("/api/v1/me/avatar", file);
       await refreshMe();
     } catch (err) {
       setError(errorText(err, t));

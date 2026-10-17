@@ -11,7 +11,15 @@ from sqlalchemy import delete, select
 
 from app.core.security import hash_password, now
 from app.db.session import SessionLocal
-from app.models import Checkin, CheckinStatus, Language, RoutineItem, TaskTemplate, User, UserType
+from app.models import (
+    Checkin,
+    CheckinStatus,
+    Language,
+    RoutineItem,
+    TaskTemplate,
+    User,
+    UserType,
+)
 from app.services.planner import starter_plan
 from app.services.schedule import local_today
 from app.services.users import get_by_email, new_user

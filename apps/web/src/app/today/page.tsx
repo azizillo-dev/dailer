@@ -4,6 +4,8 @@ import { Check, ChevronLeft, ChevronRight, Minus, Plus } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
+import { BannerCarousel } from "@/components/BannerCarousel";
+import { MotivationCard, type Motivation } from "@/components/MotivationCard";
 import { FormMessage } from "@/components/AuthShell";
 import { ItemIcon } from "@/components/ItemIcon";
 import { ProgressRing } from "@/components/ProgressRing";
@@ -80,6 +82,11 @@ function TodayView() {
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 30_000);
     return () => clearInterval(id);
+  }, []);
+
+  const [motivation, setMotivation] = useState<Motivation | null>(null);
+  useEffect(() => {
+    api<Motivation | null>("/api/v1/motivations/today", { auth: true }).then(setMotivation).catch(() => {});
   }, []);
 
   /** Optimistik: ekranda darhol o'zgaradi, server rad etsa — qaytariladi. */
@@ -161,6 +168,10 @@ function TodayView() {
           <p className="px-5 py-4 font-serif text-xl leading-snug sm:px-7">{me.profile.main_goal}</p>
         )}
       </section>
+
+      <div className="mt-4">
+        <BannerCarousel />
+      </div>
 
       <div className="mt-8 flex items-end justify-between gap-4">
         <div>
@@ -284,6 +295,18 @@ function TodayView() {
             <Plus className="h-4 w-4" /> {t("today.addFirst")}
           </Link>
         </div>
+      )}
+
+      {motivation && (
+        <section className="mt-10">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-serif text-xl">{t("mot.today")}</h2>
+            <Link href="/motivations" className="text-sm font-semibold text-highlight hover:underline">
+              {t("mot.all")} →
+            </Link>
+          </div>
+          <MotivationCard m={motivation} />
+        </section>
       )}
 
       <CheckinSheet
