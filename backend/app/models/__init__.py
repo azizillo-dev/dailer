@@ -1,3 +1,4 @@
+from app.models.focus import FocusKind, PomodoroSession
 from app.models.routine import (
     AlarmType,
     Category,
@@ -38,6 +39,8 @@ __all__ = [
     "EmailToken",
     "EmailTokenPurpose",
     "ExcuseReason",
+    "FocusKind",
+    "PomodoroSession",
     "Gender",
     "Language",
     "ModeType",

@@ -1,9 +1,11 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, File, UploadFile
 
 from app.api.deps import DB, CurrentUser
 from app.core.security import now
-from app.models import User
+from app.models import User, UserStatus
+from app.schemas.auth import MessageOut
 from app.schemas.user import MeOut, OnboardingIn, ProfileUpdateIn
+from app.services import tokens, uploads
 from app.services.users import to_me
 
 router = APIRouter(prefix="/me", tags=["me"])
@@ -40,3 +42,32 @@ async def complete_onboarding(body: OnboardingIn, user: CurrentUser, db: DB):
     await db.refresh(user)
     # Keyingi qadam: GET /routine/starter-plan → foydalanuvchi tasdiqlaydi → /routine-items/bulk
     return to_me(user)
+
+
+@router.post("/avatar", response_model=MeOut)
+async def upload_avatar(user: CurrentUser, db: DB, file: UploadFile = File(...)):
+    rel = await uploads.save_image(file, "avatars", size=(320, 320), square=True)
+    uploads.remove(user.profile.avatar_url)
+    user.profile.avatar_url = uploads.public_url(rel)
+    await db.commit()
+    await db.refresh(user)
+    return to_me(user)
+
+
+@router.delete("/avatar", response_model=MeOut)
+async def delete_avatar(user: CurrentUser, db: DB):
+    uploads.remove(user.profile.avatar_url)
+    user.profile.avatar_url = None
+    await db.commit()
+    await db.refresh(user)
+    return to_me(user)
+
+
+@router.delete("", response_model=MessageOut)
+async def request_deletion(user: CurrentUser, db: DB):
+    """Akkaunt 30 kundan keyin butunlay o'chiriladi. Shu muddat ichida kirsa — bekor bo'ladi."""
+    user.status = UserStatus.pending_deletion
+    user.deletion_requested_at = now()
+    await db.commit()
+    await tokens.revoke_all_for_user(db, user.id)
+    return MessageOut()

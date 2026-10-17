@@ -100,6 +100,16 @@ MESSAGES: dict[str, dict[str, str]] = {
         "ru": "Данные введены неверно.",
         "en": "Invalid input.",
     },
+    "invalid_image": {
+        "uz": "Rasm faylini o'qib bo'lmadi. JPG, PNG yoki WEBP yuklang.",
+        "ru": "Не удалось прочитать изображение. Загрузите JPG, PNG или WEBP.",
+        "en": "Couldn't read the image. Please upload a JPG, PNG or WEBP.",
+    },
+    "file_too_large": {
+        "uz": "Fayl juda katta (ko'pi bilan 5 MB).",
+        "ru": "Файл слишком большой (не более 5 МБ).",
+        "en": "The file is too large (5 MB max).",
+    },
     "not_found": {
         "uz": "Topilmadi.",
         "ru": "Не найдено.",

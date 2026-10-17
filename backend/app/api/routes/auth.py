@@ -69,6 +69,10 @@ async def _send_verification(db: DB, user: User) -> None:
 async def _login_result(db: DB, user: User, request: Request) -> LoginOut:
     if user.status == UserStatus.blocked:
         raise AppError("account_blocked", 403)
+    if user.status == UserStatus.pending_deletion:
+        # 30 kun ichida qayta kirdi — o'chirish bekor qilinadi
+        user.status = UserStatus.active
+        user.deletion_requested_at = None
     user.last_seen_at = now()
     if user.is_admin and user.has_2fa:
         await db.commit()

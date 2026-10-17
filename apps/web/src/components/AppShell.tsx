@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, CalendarCheck2, ListTodo, LogOut } from "lucide-react";
+import { BarChart3, CalendarCheck2, ListTodo, LogOut, Timer, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -9,11 +9,14 @@ import { Logo } from "./Logo";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useI18n, type MessageKey } from "@/lib/i18n";
+import { applyTheme, storedTheme } from "@/lib/theme";
 
 const NAV: { href: string; label: MessageKey; icon: typeof ListTodo }[] = [
   { href: "/today", label: "nav.today", icon: CalendarCheck2 },
   { href: "/stats", label: "nav.stats", icon: BarChart3 },
+  { href: "/focus", label: "nav.focus", icon: Timer },
   { href: "/routine", label: "nav.routine", icon: ListTodo },
+  { href: "/profile", label: "nav.profile", icon: UserRound },
 ];
 
 function VerifyBanner() {
@@ -39,9 +42,29 @@ function VerifyBanner() {
 /** Kirgan foydalanuvchi sahifalari uchun qobiq. Onboarding o'tilmagan bo'lsa — o'sha yerga. */
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { me, loading, logout } = useAuth();
-  const { t } = useI18n();
+  const { t, lang, setLang } = useI18n();
   const router = useRouter();
   const pathname = usePathname();
+
+  // Sarlavhadagi til tanlagich — server ham shu tilda xat va xabar yuborsin
+  useEffect(() => {
+    if (!me || me.profile.language === lang) return;
+    let stored: string | null = null;
+    try {
+      stored = localStorage.getItem("dailer.lang");
+    } catch {}
+    if (!stored) {
+      // Yangi qurilma — profildagi tilni olamiz
+      setLang(me.profile.language);
+    } else {
+      api("/api/v1/me/profile", { method: "PATCH", auth: true, body: { language: lang } }).catch(() => {});
+    }
+  }, [lang, me, setLang]);
+
+  // Yangi qurilmada profildagi mavzuni qo'llash
+  useEffect(() => {
+    if (me && storedTheme() === "system" && me.profile.theme !== "system") applyTheme(me.profile.theme);
+  }, [me]);
 
   useEffect(() => {
     if (loading) return;

@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     mfa_token_minutes: int = 5
 
     web_url: str = "http://localhost:3000"
+    # API'ning tashqi manzili (yuklangan fayllar havolasi uchun)
+    public_url: str = "http://localhost:8010"
+    upload_dir: str = "uploads"
     cors_origins: str = "http://localhost:3000"
 
     superadmin_email: str = "ceonabiyev@gmail.com"
