@@ -79,7 +79,7 @@
     },
     "extra": {
       "apiUrl": "https://dailer-api.vercel.app",
-      "googleWebClientId": "",
+      "googleWebClientId": "670356555721-ufek4lt8hirc6skeomm5c3ebiet0dt7b.apps.googleusercontent.com",
       "devApiUrl": "http://localhost:8010"
     }
   }
