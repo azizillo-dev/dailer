@@ -9,7 +9,7 @@ import { useI18n } from "@/lib/i18n";
 export const APK_URL =
   process.env.NEXT_PUBLIC_ANDROID_APK_URL || "https://github.com/azizillo-dev/dailer/releases/latest/download/dailer.apk";
 export const APK_VERSION = process.env.NEXT_PUBLIC_ANDROID_APK_VERSION || "1.0.0";
-export const APK_SIZE = process.env.NEXT_PUBLIC_ANDROID_APK_SIZE || "42 MB";
+export const APK_SIZE = process.env.NEXT_PUBLIC_ANDROID_APK_SIZE || "23 MB";
 
 const BAR_KEY = "dailer.dl.bar";
 const PROMPT_KEY = "dailer.dl.prompt";
