@@ -20,10 +20,6 @@ export const metadata: Metadata = {
   description:
     "Kun tartibi, namoz vaqtlari, Pomodoro, AI maslahatchi va haftalik hisobotlar. Maqsadga yetish uchun 24/7 emas — tartib va davomiylik kerak.",
   manifest: "/manifest.webmanifest",
-  icons: {
-    icon: [{ url: "/icon-192.png", sizes: "192x192", type: "image/png" }],
-    apple: "/apple-touch-icon.png",
-  },
   appleWebApp: { capable: true, title: "Dailer", statusBarStyle: "black-translucent" },
 };
 

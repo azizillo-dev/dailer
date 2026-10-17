@@ -70,7 +70,11 @@ def web(out: Path) -> None:
     mark(180, 0.2, CREAM).convert("RGB").save(out / "apple-touch-icon.png")
     mark(96, 0.12, None, mono=True).save(out / "badge-96.png")
     fav = mark(256, 0.12, CREAM, radius=0.22)
-    fav.save(out.parent / "src" / "app" / "favicon.ico", sizes=[(16, 16), (32, 32), (48, 48), (64, 64)])
+    fav.save(out / "favicon.ico", sizes=[(16, 16), (32, 32), (48, 48), (64, 64)])
+    # Next.js fayl qoidasi: app/icon.png va app/apple-icon.png havolasiga xesh qo'shiladi (brauzer keshi yangilanadi)
+    app = out.parent / "src" / "app"
+    mark(512, 0.2, CREAM, radius=0.22).save(app / "icon.png")
+    mark(180, 0.2, CREAM).convert("RGB").save(app / "apple-icon.png")
 
 
 def mobile(out: Path) -> None:
