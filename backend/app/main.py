@@ -17,6 +17,7 @@ from app.api.routes import (
     me,
     notifications,
     routine,
+    screen_time,
     stats,
     trackers,
 )
@@ -71,6 +72,7 @@ app.include_router(notifications.router, prefix=API)
 app.include_router(journal.router, prefix=API)
 app.include_router(trackers.router, prefix=API)
 app.include_router(badges.router, prefix=API)
+app.include_router(screen_time.router, prefix=API)
 
 
 @app.get("/health", tags=["system"])

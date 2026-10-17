@@ -6,12 +6,13 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useState } from "react";
 import * as ScreenOrientation from "expo-screen-orientation";
-import { Platform, View } from "react-native";
+import { AppState, Platform, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Splash } from "@/components/Splash";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { I18nProvider } from "@/lib/i18n";
 import { listenForActions, registerPushToken, rescheduleWeek, setupCategories } from "@/lib/notifications";
+import { syncScreenTime } from "@/lib/screenTime";
 import { ThemeProvider, usePalette, useTheme } from "@/lib/theme";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -36,7 +37,14 @@ function Shell() {
       .then(() => rescheduleWeek())
       .catch(() => {});
     registerPushToken();
-    return listenForActions(() => rescheduleWeek().catch(() => {}));
+    // Ekran vaqti (Android): ochilganda va ilovaga qaytilganda serverga yuboriladi
+    syncScreenTime().catch(() => {});
+    const sub = AppState.addEventListener("change", (s) => s === "active" && syncScreenTime().catch(() => {}));
+    const off = listenForActions(() => rescheduleWeek().catch(() => {}));
+    return () => {
+      sub.remove();
+      off();
+    };
   }, [me?.id, me?.profile.onboarding_completed_at]);
 
   return (

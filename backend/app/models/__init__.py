@@ -40,6 +40,7 @@ from app.models.routine import (
     ScheduleMode,
     TaskTemplate,
 )
+from app.models.screen_time import ScreenTimeDay
 from app.models.trackers import (
     QURAN_PAGES,
     Book,
@@ -120,6 +121,7 @@ __all__ = [
     "RefreshToken",
     "RoutineItem",
     "ScheduleMode",
+    "ScreenTimeDay",
     "TaskTemplate",
     "Theme",
     "User",

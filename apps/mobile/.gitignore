@@ -35,3 +35,9 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# Prebuild natijasi (expo prebuild) — CNG, git'ga qo'shilmaydi
+/android
+/ios
+modules/*/android/build/
+.gradle/

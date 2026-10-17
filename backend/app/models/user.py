@@ -167,6 +167,8 @@ class Profile(TimestampMixin, Base):
     share_goal_with_ai: Mapped[bool] = mapped_column(Boolean, default=True)
     interests: Mapped[list[str]] = mapped_column(ARRAY(String(32)), default=list)
     privacy: Mapped[Privacy] = mapped_column(pg_enum(Privacy, "privacy"), default=Privacy.private)
+    # Kunlik ekran vaqti chegarasi (daqiqa); None — chegara qo'yilmagan
+    screen_limit_min: Mapped[int | None] = mapped_column(SmallInteger)
 
     xp: Mapped[int] = mapped_column(Integer, default=0)
     level: Mapped[int] = mapped_column(SmallInteger, default=1)

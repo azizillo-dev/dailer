@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Flame, Share2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Flame, Share2, Smartphone } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
@@ -280,6 +280,18 @@ function StatsView() {
               </div>
             )}
           </section>
+
+          {/* Ekran vaqti */}
+          <Link href="/screen-time" className="card mt-8 flex items-center gap-4 p-5 transition-transform hover:-translate-y-0.5">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-surface-2 text-highlight">
+              <Smartphone className="h-5 w-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-semibold">{t("st.title")}</span>
+              <span className="block text-sm text-ink-soft">{t("st.cardText")}</span>
+            </span>
+            <ChevronRight className="h-4 w-4 text-ink-faint" />
+          </Link>
 
           {/* Yo'nalishlar */}
           <h2 className="mt-8 font-serif text-xl">{t("stats.byCategory")}</h2>

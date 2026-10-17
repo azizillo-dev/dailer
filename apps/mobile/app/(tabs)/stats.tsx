@@ -1,10 +1,11 @@
-import { useFocusEffect } from "expo-router";
-import { Flame, TrendingDown, TrendingUp } from "lucide-react-native";
+import { router, useFocusEffect } from "expo-router";
+import { ChevronRight, Flame, Smartphone, TrendingDown, TrendingUp } from "lucide-react-native";
 import { useCallback, useState } from "react";
 import { View } from "react-native";
-import { Card, Ring, Screen, SectionTitle, Text } from "@/components/ui";
+import { Card, Press, Ring, Screen, SectionTitle, Text } from "@/components/ui";
 import { api } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
+import { fmtMinutes, syncScreenTime } from "@/lib/screenTime";
 import { fonts, radius, usePalette } from "@/lib/theme";
 
 type Weekly = {
@@ -33,10 +34,14 @@ export default function Stats() {
   const { t, lang } = useI18n();
   const c = usePalette();
   const [d, setD] = useState<Weekly | null>(null);
+  const [screen, setScreen] = useState<{ avg_min: number | null; delta_pct: number | null } | null>(null);
 
   useFocusEffect(
     useCallback(() => {
       api<Weekly>("/api/v1/stats/weekly", { auth: true }).then(setD).catch(() => {});
+      syncScreenTime()
+        .catch(() => {})
+        .finally(() => api<{ avg_min: number | null; delta_pct: number | null }>("/api/v1/screen-time", { auth: true }).then(setScreen).catch(() => {}));
     }, []),
   );
 
@@ -93,6 +98,21 @@ export default function Stats() {
               ))}
             </View>
           </Card>
+
+          {/* Ekran vaqti — batafsil sahifaga */}
+          <Press onPress={() => router.push("/screen-time")} style={{ flexDirection: "row", alignItems: "center", gap: 12, padding: 14, borderRadius: radius.lg, backgroundColor: c.surface, borderWidth: 1, borderColor: c.line }}>
+            <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: c.accentSoft, alignItems: "center", justifyContent: "center" }}>
+              <Smartphone color={c.highlight} size={17} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text variant="h3">{t("st.title")}</Text>
+              <Text variant="faint">
+                {screen?.avg_min != null ? `${t("st.cardLead")}: ${fmtMinutes(screen.avg_min, { h: t("st.h"), m: t("st.m") })}` : t("st.empty")}
+                {screen?.delta_pct ? ` · ${t(screen.delta_pct < 0 ? "st.less" : "st.more", { n: Math.abs(screen.delta_pct) })}` : ""}
+              </Text>
+            </View>
+            <ChevronRight color={c.inkFaint} size={16} />
+          </Press>
 
           <SectionTitle title={t("stats.byCategory")} />
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>

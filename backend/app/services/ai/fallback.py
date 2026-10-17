@@ -28,6 +28,9 @@ T = {
         "step_weak": " Taklif: ertaga {cat} uchun bitta kichik, aniq vaqt belgilang.",
         "step_ok": " Taklif: shu ritmni saqlang va ertaga bitta yangi kichik odat qo'shing.",
         "streak": " Ketma-ket {n} kun — zanjirni uzmang!",
+        "screen": " Telefonda kuniga o'rtacha {t} o'tkazyapsiz{cmp}.",
+        "screen_less": " (o'tgan haftadan {d} daqiqa kam — barakalla)",
+        "screen_more": " (o'tgan haftadan {d} daqiqa ko'p)",
         "note": "\n\n(AI hozircha band, bu javob statistikangiz asosida tuzildi.)",
     },
     "ru": {
@@ -45,6 +48,9 @@ T = {
         "step_weak": " Совет: назначьте на завтра одно маленькое конкретное время для направления «{cat}».",
         "step_ok": " Совет: сохраните этот ритм и добавьте завтра одну маленькую новую привычку.",
         "streak": " {n} дней подряд — не рвите цепочку!",
+        "screen": " В телефоне вы проводите в среднем {t} в день{cmp}.",
+        "screen_less": " (на {d} мин меньше прошлой недели — молодец)",
+        "screen_more": " (на {d} мин больше прошлой недели)",
         "note": "\n\n(ИИ сейчас занят, ответ составлен по вашей статистике.)",
     },
     "en": {
@@ -62,6 +68,9 @@ T = {
         "step_weak": " Suggestion: set one small, specific time for {cat} tomorrow.",
         "step_ok": " Suggestion: keep this rhythm and add one small new habit tomorrow.",
         "streak": " {n} days in a row — don't break the chain!",
+        "screen": " You spend {t} a day on your phone on average{cmp}.",
+        "screen_less": " ({d} min less than last week — nice)",
+        "screen_more": " ({d} min more than last week)",
         "note": "\n\n(The AI is busy right now; this answer is based on your stats.)",
     },
 }
@@ -108,4 +117,20 @@ def analysis(context: dict, lang: str, note: bool = True) -> str:
     streak = (context.get("streak") or {}).get("current", 0)
     if streak >= 3:
         out += t["streak"].format(n=streak)
+
+    scr = context.get("screen_time") or {}
+    if scr.get("avg_min_per_day") is not None:
+        avg, prev = scr["avg_min_per_day"], scr.get("prev_avg_min_per_day")
+        cmp = ""
+        if prev is not None and abs(avg - prev) >= 10:
+            cmp = (t["screen_less"] if avg < prev else t["screen_more"]).format(d=abs(avg - prev))
+        out += t["screen"].format(t=_hm(avg, lang), cmp=cmp)
     return out + (t["note"] if note else "")
+
+
+def _hm(minutes: int, lang: str) -> str:
+    h, m = divmod(int(minutes), 60)
+    unit = {"uz": ("soat", "daqiqa"), "ru": ("ч", "мин"), "en": ("h", "min")}[lang]
+    if not h:
+        return f"{m} {unit[1]}"
+    return f"{h} {unit[0]} {m} {unit[1]}" if m else f"{h} {unit[0]}"

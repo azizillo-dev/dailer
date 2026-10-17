@@ -1,0 +1,12 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+  <!-- Ekran vaqti: foydalanuvchi "Foydalanish ma'lumotlariga ruxsat" sozlamasida o'zi yoqadi -->
+  <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
+
+  <!-- Android 11+: ilova nomlarini (Instagram, Telegram...) ko'rsatish uchun ishga tushiriladigan ilovalarni ko'ra olish -->
+  <queries>
+    <intent>
+      <action android:name="android.intent.action.MAIN" />
+      <category android:name="android.intent.category.LAUNCHER" />
+    </intent>
+  </queries>
+</manifest>

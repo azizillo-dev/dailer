@@ -17,6 +17,7 @@ from app.models import (
     DayReflection,
     Language,
     RoutineItem,
+    ScreenTimeDay,
     TaskTemplate,
     User,
     UserType,
@@ -69,6 +70,10 @@ async def main() -> None:
         base = {"prayer": 0.85, "sleep": 0.7, "reading": 0.5, "sport": 0.45, "study": 0.75,
                 "language": 0.55, "custom": 0.6}
         stamp = now()
+        apps = [("com.instagram.android", "Instagram"), ("org.telegram.messenger", "Telegram"),
+                ("com.google.android.youtube", "YouTube"), ("com.android.chrome", "Chrome"),
+                ("com.duolingo", "Duolingo"), ("com.whatsapp", "WhatsApp")]
+        p.screen_limit_min = 180
         for back in range(DAYS, 0, -1):
             d = today - timedelta(days=back)
             growth = (DAYS - back) / DAYS * 0.2
@@ -81,6 +86,14 @@ async def main() -> None:
                 energy=random.choice([3, 4, 5]) if early else random.choice([2, 3]),
                 slept_at=time(22, random.choice([15, 30, 45])) if early else time(random.choice([0, 1]), random.choice([10, 40])),
                 woke_at=time(5, random.choice([0, 10, 20])),
+            ))
+            # Ekran vaqti: tartibli kunlarda kamroq, vaqt o'tishi bilan kamayib boradi
+            total = int(random.gauss(150 if early else 260, 30) - (DAYS - back) * 2)
+            total = max(45, total)
+            weights = [0.34, 0.24, 0.2, 0.1, 0.05, 0.07]
+            db.add(ScreenTimeDay(
+                user_id=user.id, date=d, total_min=total, pickups=random.randint(45, 110), source="android",
+                apps=[{"id": a, "name": n, "minutes": int(total * w * random.uniform(0.8, 1.2))} for (a, n), w in zip(apps, weights)],
             ))
             for item in items:
                 if not item.days_of_week & (1 << d.weekday()):

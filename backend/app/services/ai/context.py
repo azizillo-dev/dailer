@@ -7,6 +7,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import CheckinStatus, DayReflection, FocusKind, PomodoroSession, User
+from app.services import screen_time
 from app.services import stats as st
 from app.services.schedule import build_day, local_today
 
@@ -114,6 +115,8 @@ async def build_context(db: AsyncSession, user: User) -> dict:
         },
         "streak": st.streak(ctx),
         "most_missed": most_missed,
+        # Telefon ekran vaqti (bo'lsa): "qanday ketyapman" tahliliga qo'shiladi
+        "screen_time": await screen_time.ai_digest(db, user),
     }
 
 
