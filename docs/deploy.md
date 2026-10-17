@@ -75,7 +75,7 @@ APK GitHub Releases'da: https://github.com/azizillo-dev/dailer/releases/latest/d
 (sayt shu "latest" havolani ishlatadi — yangi release chiqqanda sayt o'zgarmaydi).
 
 1. `apps/mobile/app.json` → `version` va `android.versionCode` ni oshiring.
-2. Native loyiha va build (Android SDK `D:\devndroid-sdk`, JDK `D:\dev\jdk`):
+2. Native loyiha va build (Android SDK `D:\dev\android-sdk`, JDK `D:\dev\jdk`):
    ```bash
    cd apps/mobile
    npx expo prebuild --platform android --clean --no-install
