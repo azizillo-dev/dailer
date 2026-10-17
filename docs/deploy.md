@@ -12,7 +12,7 @@ Hozirgi production:
 | Email | hali sozlanmagan | Gmail SMTP yoki Brevo — pastda |
 
 `main` ga har push — ikkala loyiha avtomatik qayta deploy bo'ladi.
-Qo'lda CLI deploy — repo ildizidan (loyihalarda Root Directory sozlangan): `vercel deploy --prod --cwd .` emas, `cd D:/dailer && vercel --prod` (`.vercel` bog'lanishi bilan).
+Qo'lda qayta deploy: Vercel dashboard → loyiha → Deployments → Redeploy.
 
 ## Serverless'ga moslashuvlar
 
