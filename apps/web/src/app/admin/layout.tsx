@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Image as ImageIcon, LayoutDashboard, Quote, ScrollText, ShieldCheck, Users } from "lucide-react";
+import { ArrowLeft, Bot, Image as ImageIcon, LayoutDashboard, Quote, ScrollText, ShieldCheck, Trophy, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import QRCode from "qrcode";
@@ -18,6 +18,8 @@ const NAV = [
   { href: "/admin/users", label: "Foydalanuvchilar", icon: Users },
   { href: "/admin/motivations", label: "Motivatsiyalar", icon: Quote },
   { href: "/admin/banners", label: "Bannerlar", icon: ImageIcon },
+  { href: "/admin/challenges", label: "Challenge'lar", icon: Trophy },
+  { href: "/admin/ai", label: "AI provayderlar", icon: Bot },
   { href: "/admin/audit", label: "Audit log", icon: ScrollText },
 ];
 

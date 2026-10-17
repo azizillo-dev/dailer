@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AppShell } from "@/components/AppShell";
+import { ChallengeCard, type ChallengeSummary } from "@/components/ChallengeCard";
 import { FormMessage } from "@/components/AuthShell";
 import { api, setTokens, type Me, type TokenPair } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
@@ -117,6 +118,13 @@ function ProfileView() {
   const fileRef = useRef<HTMLInputElement>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pending = useRef<Partial<P>>({});
+  const [challenges, setChallenges] = useState<ChallengeSummary[]>([]);
+
+  useEffect(() => {
+    api<ChallengeSummary[]>("/api/v1/challenges", { auth: true })
+      .then((list) => setChallenges(list.filter((c) => c.show_on_profile !== false)))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     // Saqlanmagan o'zgarishlar bo'lsa, server javobi ularni bosib ketmasin
@@ -235,6 +243,23 @@ function ProfileView() {
           <Link href="/admin" className="btn-ghost hidden h-10 px-4 text-sm sm:inline-flex">
             <Shield className="h-4 w-4" /> {t("profile.admin")}
           </Link>
+        )}
+      </section>
+
+      {/* Challenge natijalari — profilda ko'rinadi */}
+      <section className="animate-rise">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-serif text-xl">{t("ch.title")}</h2>
+          <Link href="/challenges" className="text-sm font-semibold text-highlight hover:underline">
+            {challenges.length ? t("mot.all") : t("ch.new")} →
+          </Link>
+        </div>
+        {challenges.length > 0 && (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {challenges.map((c) => (
+              <ChallengeCard key={c.id} c={c} compact />
+            ))}
+          </div>
         )}
       </section>
 

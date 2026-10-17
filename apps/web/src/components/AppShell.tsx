@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, CalendarCheck2, ListTodo, LogOut, Sparkles, Timer, UserRound } from "lucide-react";
+import { BarChart3, CalendarCheck2, ListTodo, LogOut, Sparkles, Timer, Trophy, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -17,6 +17,7 @@ const NAV: { href: string; label: MessageKey; icon: typeof ListTodo; mobile: boo
   { href: "/ai", label: "nav.ai", icon: Sparkles, mobile: true },
   { href: "/focus", label: "nav.focus", icon: Timer, mobile: true },
   { href: "/routine", label: "nav.routine", icon: ListTodo, mobile: false },
+  { href: "/challenges", label: "nav.challenges", icon: Trophy, mobile: false },
   { href: "/profile", label: "nav.profile", icon: UserRound, mobile: true },
 ];
 const MOBILE_NAV = NAV.filter((n) => n.mobile);

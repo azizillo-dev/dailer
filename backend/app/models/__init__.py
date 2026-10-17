@@ -6,6 +6,13 @@ from app.models.ai import (
     AIReportKind,
     AIRole,
 )
+from app.models.challenge import (
+    Challenge,
+    ChallengeKind,
+    ChallengeLog,
+    ChallengeParticipant,
+    ChallengeVisibility,
+)
 from app.models.content import (
     AuditLog,
     Banner,
@@ -55,6 +62,11 @@ __all__ = [
     "AIReportKind",
     "AIRole",
     "AuditLog",
+    "Challenge",
+    "ChallengeKind",
+    "ChallengeLog",
+    "ChallengeParticipant",
+    "ChallengeVisibility",
     "Banner",
     "BannerEvent",
     "BannerEventType",

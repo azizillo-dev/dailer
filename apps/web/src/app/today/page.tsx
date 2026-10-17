@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { BannerCarousel } from "@/components/BannerCarousel";
+import { ChallengeCard, type ChallengeSummary } from "@/components/ChallengeCard";
 import { MotivationCard, type Motivation } from "@/components/MotivationCard";
 import { FormMessage } from "@/components/AuthShell";
 import { ItemIcon } from "@/components/ItemIcon";
@@ -85,8 +86,21 @@ function TodayView() {
   }, []);
 
   const [motivation, setMotivation] = useState<Motivation | null>(null);
+  const [challenges, setChallenges] = useState<ChallengeSummary[]>([]);
   useEffect(() => {
     api<Motivation | null>("/api/v1/motivations/today", { auth: true }).then(setMotivation).catch(() => {});
+    // Faol challenge'lar (bugungi kiritilgan qiymat bilan)
+    api<ChallengeSummary[]>("/api/v1/challenges", { auth: true })
+      .then((list) =>
+        Promise.all(
+          list
+            .filter((c) => !c.finished)
+            .slice(0, 4)
+            .map((c) => api<ChallengeSummary>(`/api/v1/challenges/${c.id}`, { auth: true })),
+        ),
+      )
+      .then(setChallenges)
+      .catch(() => {});
   }, []);
 
   /** Optimistik: ekranda darhol o'zgaradi, server rad etsa — qaytariladi. */
@@ -303,6 +317,22 @@ function TodayView() {
             <Plus className="h-4 w-4" /> {t("today.addFirst")}
           </Link>
         </div>
+      )}
+
+      {challenges.length > 0 && (
+        <section className="mt-10">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-serif text-xl">{t("ch.title")}</h2>
+            <Link href="/challenges" className="text-sm font-semibold text-highlight hover:underline">
+              {t("mot.all")} →
+            </Link>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {challenges.map((c) => (
+              <ChallengeCard key={c.id} c={c} compact onChange={(n) => setChallenges((all) => all.map((x) => (x.id === n.id ? n : x)))} />
+            ))}
+          </div>
+        </section>
       )}
 
       {motivation && (

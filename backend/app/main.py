@@ -5,7 +5,17 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from app.api.routes import admin, ai, auth, content, focus, me, routine, stats
+from app.api.routes import (
+    admin,
+    ai,
+    auth,
+    challenges,
+    content,
+    focus,
+    me,
+    routine,
+    stats,
+)
 from app.core.config import settings
 from app.core.errors import register_error_handlers
 from app.core.i18n import current_lang, pick_language
@@ -52,6 +62,7 @@ app.include_router(focus.router, prefix=API)
 app.include_router(content.router, prefix=API)
 app.include_router(admin.router, prefix=API)
 app.include_router(ai.router, prefix=API)
+app.include_router(challenges.router, prefix=API)
 
 
 @app.get("/health", tags=["system"])
