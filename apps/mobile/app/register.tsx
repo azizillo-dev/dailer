@@ -59,7 +59,7 @@ export default function Register() {
           // Yangi foydalanuvchi — index o'zi onboarding'ga yo'naltiradi
           if (await acceptLogin(r)) router.replace("/");
         }}
-        onError={(e) => setError(errorText(e, t("common.error"), t("common.network")))}
+        onError={setError}
       />
     </AuthLayout>
   );

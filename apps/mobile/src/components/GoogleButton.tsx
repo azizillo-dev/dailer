@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ActivityIndicator, Text as RNText, View } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { Press, Text } from "@/components/ui";
-import { api, type LoginResult } from "@/lib/api";
+import { api, ApiError, errorText, type LoginResult } from "@/lib/api";
 import { googleAvailable, googleIdToken } from "@/lib/google";
 import { useI18n } from "@/lib/i18n";
 import { fonts, radius, usePalette } from "@/lib/theme";
@@ -18,8 +18,18 @@ function GoogleLogo({ size = 16 }: { size?: number }) {
   );
 }
 
+/** Google native xatosi → foydalanuvchiga tushunarli xabar (kod bilan — muammoni topish oson bo'lsin). */
+function googleMessage(e: unknown, t: ReturnType<typeof useI18n>["t"]): string {
+  if (e instanceof ApiError) return errorText(e, t("common.error"), t("common.network"));
+  const code = String((e as { code?: string | number } | null)?.code ?? "");
+  // 10 — DEVELOPER_ERROR: Google Cloud'dagi Android client (package / SHA-1) shu APK'ga mos emas
+  if (code === "10" || code === "DEVELOPER_ERROR") return t("auth.googleConfig");
+  if (code === "PLAY_SERVICES_NOT_AVAILABLE") return t("auth.googlePlay");
+  return t("auth.googleFail", { code: code || "?" });
+}
+
 /** "Google bilan davom etish" — kirish ham, ro'yxatdan o'tish ham (backend o'zi ajratadi). */
-export function GoogleButton({ onResult, onError }: { onResult: (r: LoginResult) => void; onError: (e: unknown) => void }) {
+export function GoogleButton({ onResult, onError }: { onResult: (r: LoginResult) => void; onError: (message: string) => void }) {
   const { t, lang } = useI18n();
   const c = usePalette();
   const [busy, setBusy] = useState(false);
@@ -32,7 +42,7 @@ export function GoogleButton({ onResult, onError }: { onResult: (r: LoginResult)
       if (!idToken) return; // bekor qilindi
       onResult(await api<LoginResult>("/api/v1/auth/google", { method: "POST", body: { id_token: idToken, language: lang } }));
     } catch (e) {
-      onError(e);
+      onError(googleMessage(e, t));
     } finally {
       setBusy(false);
     }

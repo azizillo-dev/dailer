@@ -81,7 +81,7 @@ export default function Login() {
           </Link>
           <Message kind="error">{error}</Message>
           <Button title={t("auth.login")} onPress={submit} loading={busy} disabled={!email || !password} />
-          <GoogleButton onResult={(r) => run(() => handle(r))} onError={(e) => setError(errorText(e, t("common.error"), t("common.network")))} />
+          <GoogleButton onResult={(r) => run(() => handle(r))} onError={setError} />
         </>
       )}
     </AuthLayout>
