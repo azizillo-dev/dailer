@@ -42,7 +42,18 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      "expo-font",
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./node_modules/@expo-google-fonts/fraunces/500Medium/Fraunces_500Medium.ttf",
+            "./node_modules/@expo-google-fonts/fraunces/400Regular_Italic/Fraunces_400Regular_Italic.ttf",
+            "./node_modules/@expo-google-fonts/manrope/500Medium/Manrope_500Medium.ttf",
+            "./node_modules/@expo-google-fonts/manrope/600SemiBold/Manrope_600SemiBold.ttf",
+            "./node_modules/@expo-google-fonts/manrope/700Bold/Manrope_700Bold.ttf"
+          ]
+        }
+      ],
       "expo-localization",
       [
         "expo-notifications",

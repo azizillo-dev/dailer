@@ -57,14 +57,20 @@ function Shell() {
 }
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     Fraunces_500Medium,
     Fraunces_400Regular_Italic,
     Manrope_500Medium,
     Manrope_600SemiBold,
     Manrope_700Bold,
   });
-  if (!fontsLoaded) return null;
+  // Shrift yuklanmasa ham ilova splash'da qotib qolmasin — 4 soniyadan keyin tizim shrifti bilan ochiladi
+  const [fontTimeout, setFontTimeout] = useState(false);
+  useEffect(() => {
+    const id = setTimeout(() => setFontTimeout(true), 4000);
+    return () => clearTimeout(id);
+  }, []);
+  if (!fontsLoaded && !fontError && !fontTimeout) return null;
   return (
     <SafeAreaProvider>
       <ThemeProvider>
