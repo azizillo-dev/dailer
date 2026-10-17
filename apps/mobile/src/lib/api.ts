@@ -4,9 +4,10 @@ import { getLang } from "./i18n";
 import { secure } from "./storage";
 
 function resolveApiUrl(): string {
+  // Ustuvorlik: EXPO_PUBLIC_API_URL → dev'da lokal server → production (app.json extra.apiUrl)
   const fromEnv = process.env.EXPO_PUBLIC_API_URL;
-  const fromConfig = (Constants.expoConfig?.extra as { apiUrl?: string } | undefined)?.apiUrl;
-  const url = fromEnv || fromConfig || "http://localhost:8010";
+  const extra = Constants.expoConfig?.extra as { apiUrl?: string; devApiUrl?: string } | undefined;
+  const url = fromEnv || (__DEV__ ? extra?.devApiUrl : extra?.apiUrl) || extra?.apiUrl || "http://localhost:8010";
   // Android emulyatorida kompyuterning localhost'i — 10.0.2.2
   return Platform.OS === "android" ? url.replace("localhost", "10.0.2.2") : url;
 }

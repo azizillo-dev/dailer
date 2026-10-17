@@ -78,8 +78,9 @@
       "typedRoutes": false
     },
     "extra": {
-      "apiUrl": "http://localhost:8010",
-      "googleWebClientId": ""
+      "apiUrl": "https://dailer-api.vercel.app",
+      "googleWebClientId": "",
+      "devApiUrl": "http://localhost:8010"
     }
   }
 }
