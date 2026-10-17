@@ -100,7 +100,7 @@ async def evening_summaries(db: AsyncSession, now_utc: datetime) -> int:
             if streak >= 3:
                 body += tx["streak"].format(n=streak)
         if await notify.send(
-            db, user.id, NotificationKind.evening_summary, tx["summary_title"], body, {"url": "/today"},
+            db, user.id, NotificationKind.evening_summary, tx["summary_title"], body, {"url": "/today?reflect=1"},
             dedupe_key=f"evening:{user.id}:{local.date()}",
         ):
             count += 1

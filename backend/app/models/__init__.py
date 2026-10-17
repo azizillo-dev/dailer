@@ -24,6 +24,7 @@ from app.models.content import (
     MotivationCategory,
 )
 from app.models.focus import FocusKind, PomodoroSession
+from app.models.journal import DayReflection, StreakFreeze
 from app.models.notification import Notification, NotificationKind
 from app.models.routine import (
     AlarmType,
@@ -80,7 +81,9 @@ __all__ = [
     "Checkin",
     "CheckinSource",
     "CheckinStatus",
+    "DayReflection",
     "Device",
+    "StreakFreeze",
     "EmailToken",
     "EmailTokenPurpose",
     "ExcuseReason",

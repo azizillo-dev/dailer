@@ -10,6 +10,7 @@ import { MotivationCard, type Motivation } from "@/components/MotivationCard";
 import { FormMessage } from "@/components/AuthShell";
 import { ItemIcon } from "@/components/ItemIcon";
 import { ProgressRing } from "@/components/ProgressRing";
+import { ReflectionSheet, type Reflection } from "@/components/ReflectionSheet";
 import { Sheet } from "@/components/Sheet";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
@@ -83,6 +84,16 @@ function TodayView() {
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 30_000);
     return () => clearInterval(id);
+  }, []);
+
+  const [reflection, setReflection] = useState<Reflection | null>(null);
+  const [reflectOpen, setReflectOpen] = useState(false);
+  useEffect(() => {
+    api<Reflection>(`/api/v1/journal/${date}`, { auth: true }).then(setReflection).catch(() => {});
+  }, [date]);
+  // Kechki xulosa xabaridan kelinganda (?reflect=1) — oyna darhol ochiladi
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("reflect") === "1") setReflectOpen(true);
   }, []);
 
   const [motivation, setMotivation] = useState<Motivation | null>(null);
@@ -319,6 +330,22 @@ function TodayView() {
         </div>
       )}
 
+      {day && day.items.length > 0 && (
+        <button
+          onClick={() => setReflectOpen(true)}
+          className="card mt-6 flex w-full items-center gap-4 p-5 text-left transition-colors hover:bg-surface-2"
+        >
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-surface-2 text-xl">
+            {reflection?.filled ? ["😣", "😕", "😐", "🙂", "😄"][(reflection.mood ?? 3) - 1] : "🌙"}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-semibold">{reflection?.filled ? t("refl.done") : t("refl.title")}</span>
+            <span className="block truncate text-sm text-ink-faint">{reflection?.note || t("refl.note")}</span>
+          </span>
+          <span className="text-sm font-semibold text-highlight">{t("refl.cta")} →</span>
+        </button>
+      )}
+
       {challenges.length > 0 && (
         <section className="mt-10">
           <div className="mb-3 flex items-center justify-between">
@@ -346,6 +373,8 @@ function TodayView() {
           <MotivationCard m={motivation} />
         </section>
       )}
+
+      <ReflectionSheet open={reflectOpen} date={date} onClose={() => setReflectOpen(false)} onSaved={setReflection} />
 
       <CheckinSheet
         entry={open}

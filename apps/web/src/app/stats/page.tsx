@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { FormMessage } from "@/components/AuthShell";
-import { DeltaBadge, WeekBars, dateLong, type DayRow } from "@/components/charts";
+import { DeltaBadge, WeekBars, YearHeatmap, dateLong, type DayRow, type HeatDay } from "@/components/charts";
 import { ItemIcon } from "@/components/ItemIcon";
 import { ProgressRing } from "@/components/ProgressRing";
 import { api } from "@/lib/api";
@@ -59,6 +59,18 @@ function StatsView() {
   useEffect(() => {
     load(start);
   }, [start, load]);
+
+  const [freeze, setFreeze] = useState<{ left: number } | null>(null);
+  const [candidates, setCandidates] = useState<{ date: string }[]>([]);
+  const [freezeMsg, setFreezeMsg] = useState("");
+  const [insights, setInsights] = useState<{ kind: string; text: string }[]>([]);
+  const [heat, setHeat] = useState<{ year: number; days: HeatDay[]; active_days: number; perfect_days: number; avg_score: number | null } | null>(null);
+  useEffect(() => {
+    api<{ left: number }>("/api/v1/streak/freezes", { auth: true }).then(setFreeze).catch(() => {});
+    api<{ date: string }[]>("/api/v1/stats/freeze-candidates", { auth: true }).then(setCandidates).catch(() => {});
+    api<{ kind: string; text: string }[]>("/api/v1/stats/insights", { auth: true }).then(setInsights).catch(() => {});
+    api<typeof heat>("/api/v1/stats/heatmap", { auth: true }).then(setHeat).catch(() => {});
+  }, [lang]);
 
   const range = data
     ? `${new Date(`${data.week_start}T12:00:00`).toLocaleDateString(lang === "uz" ? "uz-Latn" : lang, { day: "numeric", month: "short" })} – ${new Date(`${data.week_end}T12:00:00`).toLocaleDateString(lang === "uz" ? "uz-Latn" : lang, { day: "numeric", month: "short" })}`
@@ -123,6 +135,37 @@ function StatsView() {
               <p className="mt-3 text-xs text-ink-faint">
                 {t("stats.longest", { n: data.streak.longest })} · {t("stats.threshold")}
               </p>
+              {freeze && (
+                <div className="mt-4 border-t border-line pt-4">
+                  <p className="text-xs font-semibold text-ink-soft">
+                    ❄ {t("freeze.title")} · {t("freeze.left", { n: freeze.left })}
+                  </p>
+                  {freezeMsg ? (
+                    <p className="mt-2 text-xs font-bold text-success">✓ {freezeMsg}</p>
+                  ) : freeze.left > 0 && candidates.length > 0 ? (
+                    <button
+                      className="btn-ghost mt-2 h-9 px-4 text-xs"
+                      onClick={async () => {
+                        const r = await api<{ streak: Weekly["streak"]; left: number }>("/api/v1/streak/freezes", {
+                          method: "POST",
+                          auth: true,
+                          body: { date: candidates[0].date },
+                        }).catch(() => null);
+                        if (r) {
+                          setFreeze({ ...freeze, left: r.left });
+                          setCandidates(candidates.slice(1));
+                          setData((d) => (d ? { ...d, streak: r.streak } : d));
+                          setFreezeMsg(t("freeze.done"));
+                        }
+                      }}
+                    >
+                      {t("freeze.use", { day: dateLong(candidates[0].date, lang) })}
+                    </button>
+                  ) : (
+                    <p className="mt-1 text-[11px] text-ink-faint">{t("freeze.hint")}</p>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -186,6 +229,25 @@ function StatsView() {
             </details>
           </section>
 
+          {/* Bilasizmi? */}
+          <section className="mt-8">
+            <h2 className="font-serif text-xl">{t("ins.title")}</h2>
+            {insights.length === 0 ? (
+              <p className="card mt-3 p-5 text-sm text-ink-soft">{t("ins.empty")}</p>
+            ) : (
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                {insights.map((i) => (
+                  <p key={i.kind} className="card animate-rise flex gap-3 p-5 text-[15px] leading-relaxed">
+                    <span className="text-xl" aria-hidden>
+                      {{ sleep: "🌙", mood: "🙂", weekday: "📅", morning: "🌅", focus: "⏱" }[i.kind] ?? "💡"}
+                    </span>
+                    <span>{i.text}</span>
+                  </p>
+                ))}
+              </div>
+            )}
+          </section>
+
           {/* Yo'nalishlar */}
           <h2 className="mt-8 font-serif text-xl">{t("stats.byCategory")}</h2>
           {data.categories.length === 0 && <p className="card mt-3 p-6 text-ink-soft">{t("stats.empty")}</p>}
@@ -211,6 +273,34 @@ function StatsView() {
               </Link>
             ))}
           </div>
+
+          {/* Yil xaritasi */}
+          {heat && heat.days.length > 0 && (
+            <section className="card mt-8 p-5 sm:p-6">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <h2 className="font-serif text-xl">
+                  {t("heat.title")} · {heat.year}
+                </h2>
+                <p className="text-xs text-ink-faint">
+                  {t("heat.active", { n: heat.active_days })} · {t("heat.perfect", { n: heat.perfect_days })}
+                  {heat.avg_score != null ? ` · ${t("heat.avg", { n: Math.round(heat.avg_score) })}` : ""}
+                </p>
+              </div>
+              <div className="mt-4">
+                <YearHeatmap
+                  days={heat.days}
+                  lang={lang}
+                  labels={{
+                    none: t("stats.noData"),
+                    frozen: t("heat.frozen"),
+                    low: t("stats.legendLow"),
+                    high: t("stats.legendHigh"),
+                    weekdays: Array.from({ length: 7 }, (_, i) => t(`day.${i}` as MessageKey)),
+                  }}
+                />
+              </div>
+            </section>
+          )}
         </>
       )}
     </>

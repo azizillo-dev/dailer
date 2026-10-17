@@ -14,6 +14,7 @@ from app.db.session import SessionLocal
 from app.models import (
     Checkin,
     CheckinStatus,
+    DayReflection,
     Language,
     RoutineItem,
     TaskTemplate,
@@ -71,6 +72,16 @@ async def main() -> None:
         for back in range(DAYS, 0, -1):
             d = today - timedelta(days=back)
             growth = (DAYS - back) / DAYS * 0.2
+            # Erta uxlagan kunlar — tartib yaxshiroq (insight'lar uchun real bog'liqlik)
+            early = random.random() < 0.55
+            growth += 0.12 if early else -0.12
+            db.add(DayReflection(
+                user_id=user.id, date=d,
+                mood=random.choice([4, 5]) if early else random.choice([2, 3]),
+                energy=random.choice([3, 4, 5]) if early else random.choice([2, 3]),
+                slept_at=time(22, random.choice([15, 30, 45])) if early else time(random.choice([0, 1]), random.choice([10, 40])),
+                woke_at=time(5, random.choice([0, 10, 20])),
+            ))
             for item in items:
                 if not item.days_of_week & (1 << d.weekday()):
                     continue

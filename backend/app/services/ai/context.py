@@ -6,7 +6,7 @@ from datetime import date, time, timedelta
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import CheckinStatus, FocusKind, PomodoroSession, User
+from app.models import CheckinStatus, DayReflection, FocusKind, PomodoroSession, User
 from app.services import stats as st
 from app.services.schedule import build_day, local_today
 
@@ -66,6 +66,21 @@ async def build_context(db: AsyncSession, user: User) -> dict:
         )
     )
 
+    refl = (
+        await db.scalars(
+            select(DayReflection).where(DayReflection.user_id == user.id, DayReflection.date >= today - timedelta(days=6))
+        )
+    ).all()
+    moods = [r.mood for r in refl if r.mood]
+    # Yotish vaqti: yarim tundan keyingisi (00:00–05:59) "kech" sifatida 24+ soat hisoblanadi
+    sleeps = [
+        (r.slept_at.hour + (24 if r.slept_at.hour < 6 else 0)) * 60 + r.slept_at.minute for r in refl if r.slept_at
+    ]
+    sleep_avg = None
+    if sleeps:
+        m = round(sum(sleeps) / len(sleeps)) % (24 * 60)
+        sleep_avg = f"{m // 60:02d}:{m % 60:02d}"
+
     age = (today.year - p.birth_year) if p.birth_year else None
     return {
         "user": {
@@ -94,6 +109,8 @@ async def build_context(db: AsyncSession, user: User) -> dict:
             "best_day": WEEKDAYS[best.date.weekday()] if best else None,
             "weak_day": WEEKDAYS[weak.date.weekday()] if weak and weak is not best else None,
             "focus_minutes": int(focus_min or 0),
+            "avg_mood_1_5": round(sum(moods) / len(moods), 1) if moods else None,
+            "avg_bedtime": sleep_avg,
         },
         "streak": st.streak(ctx),
         "most_missed": most_missed,

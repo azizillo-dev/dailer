@@ -15,7 +15,7 @@ from zoneinfo import ZoneInfo
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Checkin, CheckinStatus, RoutineItem, User
+from app.models import Checkin, CheckinStatus, RoutineItem, StreakFreeze, User
 
 # Kun "hisoblangan" bo'lishi uchun minimal ball (streak uchun)
 STREAK_THRESHOLD = 50.0
@@ -63,7 +63,14 @@ class DayStats:
 class StatsContext:
     """Foydalanuvchining barcha vazifalari va kerakli oraliqdagi check-in'lari bir marta yuklanadi."""
 
-    def __init__(self, user: User, items: list[RoutineItem], checkins: list[Checkin], today: date):
+    def __init__(
+        self,
+        user: User,
+        items: list[RoutineItem],
+        checkins: list[Checkin],
+        today: date,
+        freezes: set[date] | None = None,
+    ):
         self.user = user
         self.items = items
         self.today = today
@@ -71,6 +78,8 @@ class StatsContext:
         self.checkins: dict[tuple[uuid.UUID, date], Checkin] = {
             (c.routine_item_id, c.date): c for c in checkins
         }
+        # Muzlatilgan kunlar zanjirni uzmaydi
+        self.freezes = freezes or set()
 
     def alive_on(self, item: RoutineItem, d: date) -> bool:
         created = item.created_at.astimezone(self.tz).date()
@@ -130,7 +139,16 @@ async def load_context(db: AsyncSession, user: User, start: date, today: date) -
             )
         )
     ).all()
-    return StatsContext(user, list(items), list(checkins), today)
+    freezes = set(
+        (
+            await db.scalars(
+                select(StreakFreeze.date).where(
+                    StreakFreeze.user_id == user.id, StreakFreeze.date >= start, StreakFreeze.date <= today
+                )
+            )
+        ).all()
+    )
+    return StatsContext(user, list(items), list(checkins), today, freezes)
 
 
 def week_start(d: date) -> date:
@@ -163,6 +181,9 @@ def streak(ctx: StatsContext) -> dict:
     d -= timedelta(days=1)
     limit = ctx.today - timedelta(days=STREAK_LOOKBACK_DAYS)
     while d >= limit:
+        if d in ctx.freezes:
+            d -= timedelta(days=1)
+            continue
         s = ctx.day(d).total
         if s.planned == 0 or s.score is None:
             # Vazifasiz yoki to'liq uzrli kun streak'ni uzmaydi, lekin qo'shmaydi ham
@@ -182,6 +203,9 @@ def streak(ctx: StatsContext) -> dict:
     first = min((i.created_at.astimezone(ctx.tz).date() for i in ctx.items), default=ctx.today)
     d = max(first, limit)
     while d <= ctx.today:
+        if d in ctx.freezes:
+            d += timedelta(days=1)
+            continue
         s = ctx.day(d).total
         if s.score is not None:
             if s.score >= STREAK_THRESHOLD:
