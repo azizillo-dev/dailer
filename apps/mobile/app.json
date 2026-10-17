@@ -88,6 +88,7 @@
     "androidStatusBar": {
       "barStyle": "dark-content",
       "backgroundColor": "#fff8ef"
-    }
+    },
+    "primaryColor": "#f28c45"
   }
 }
