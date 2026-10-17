@@ -14,6 +14,10 @@ class Settings(BaseSettings):
     # Bepul Postgres (Supabase pooler) ulanishlar sonini cheklaydi
     db_pool_size: int = 5
     db_max_overflow: int = 10
+    # Serverless (Vercel): har so'rov o'z ulanishi, pool saqlanmaydi
+    db_null_pool: bool = False
+    # Neon integratsiyasi: pooler'siz to'g'ridan-to'g'ri manzil (asyncpg prepared statement'lari uchun)
+    database_url_unpooled: str = ""
     # Bo'sh — Redis'siz (bitta server uchun xotiradagi o'rinbosar; bepul hostingda)
     redis_url: str = "redis://localhost:6379/0"
 
@@ -59,16 +63,22 @@ class Settings(BaseSettings):
     vapid_private_key: str = ""
     vapid_subject: str = "mailto:ceonabiyev@gmail.com"
 
-    # Tashqi cron (cron-job.org) /internal/cron'ni shu kalit bilan chaqiradi; bo'sh — o'chiq
+    # Tashqi cron /internal/cron'ni chaqiradi: X-Cron-Secret kaliti yoki GitHub Actions OIDC tokeni
     cron_secret: str = ""
+    # "egasi/repo" — shu repodagi GitHub Actions'ning OIDC tokeni qabul qilinadi (kalitsiz)
+    cron_github_repo: str = ""
+    # Cron necha daqiqada bir chaqiriladi (vazifalar shu oynada "vaqti keldi" deb hisoblanadi)
+    cron_window_min: int = 1
 
     verify_email_hours: int = 48
     reset_password_minutes: int = 30
 
-    @field_validator("database_url")
+    @field_validator("database_url", "database_url_unpooled")
     @classmethod
     def _asyncpg_url(cls, v: str) -> str:
         """Neon/Render beradigan postgres://...?sslmode=require manzilini asyncpg'ga moslaydi."""
+        if not v:
+            return v
         parts = urlsplit(v)
         scheme = parts.scheme
         if scheme in ("postgres", "postgresql"):
@@ -80,6 +90,10 @@ class Settings(BaseSettings):
                 query["ssl"] = "require"
         query.pop("channel_binding", None)  # asyncpg qo'llamaydi
         return urlunsplit((scheme, parts.netloc, parts.path, urlencode(query), parts.fragment))
+
+    @property
+    def db_url(self) -> str:
+        return self.database_url_unpooled or self.database_url
 
     @property
     def is_dev(self) -> bool:

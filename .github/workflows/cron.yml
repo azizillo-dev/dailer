@@ -1,0 +1,29 @@
+# Fon vazifalari (kechki xulosa, maqsad eslatmasi, "ikki marta o'tkazmang", eski akkauntlarni tozalash).
+# Vercel bepul tarifida cron kuniga bir marta — shuning uchun GitHub Actions chaqiradi.
+# Kalit kerak emas: API GitHub OIDC tokenini tekshiradi (faqat shu repo, faqat main).
+name: cron
+
+on:
+  schedule:
+    - cron: "*/15 * * * *" # tick (API'da CRON_WINDOW_MIN=15)
+    - cron: "0 22 * * *" # daily — Toshkent 03:00
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  call:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Call API
+        env:
+          API_URL: ${{ vars.DAILER_API_URL || 'https://dailer-api.vercel.app' }}
+          JOB: ${{ github.event.schedule == '0 22 * * *' && 'daily' || 'tick' }}
+        run: |
+          TOKEN=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=dailer-cron" | jq -r .value)
+          curl -sS --fail-with-body --retry 2 --retry-delay 10 -X POST \
+            -H "Authorization: Bearer $TOKEN" "$API_URL/api/v1/internal/cron/$JOB"

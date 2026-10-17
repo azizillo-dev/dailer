@@ -8,6 +8,7 @@ from zoneinfo import ZoneInfo
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.models import CheckinStatus, NotificationKind, Profile, User, UserStatus
 from app.models.user import GoalReminderFreq
 from app.services import notify, uploads
@@ -63,10 +64,16 @@ def _local(now_utc: datetime, tz: str) -> datetime:
 
 
 def _same_minute(local: datetime, t: time | None, plus_min: int = 0) -> bool:
+    """Vaqti keldimi: [maqsad, maqsad + cron_window_min) oralig'ida.
+
+    Worker har daqiqada chaqirsa oyna = 1 daqiqa; tashqi cron siyrakroq (masalan 15 daqiqada)
+    chaqirsa oyna kengayadi, dedupe esa xabar ikki marta ketmasligini ta'minlaydi.
+    """
     if t is None:
         return False
-    target = (datetime.combine(local.date(), t) + timedelta(minutes=plus_min)).time()
-    return local.hour == target.hour and local.minute == target.minute
+    target = datetime.combine(local.date(), t, tzinfo=local.tzinfo) + timedelta(minutes=plus_min)
+    now = local.replace(second=0, microsecond=0)
+    return target <= now < target + timedelta(minutes=max(1, settings.cron_window_min))
 
 
 async def _active_users(db: AsyncSession) -> list[User]:

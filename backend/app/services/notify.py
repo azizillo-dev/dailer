@@ -7,11 +7,11 @@ import uuid
 import httpx
 from fastapi.concurrency import run_in_threadpool
 from sqlalchemy import delete, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.models import Device, Notification, NotificationKind, Platform
-from app.services.redis import redis
 
 log = logging.getLogger(__name__)
 
@@ -72,12 +72,21 @@ async def send(
     data: dict | None = None,
     dedupe_key: str | None = None,
 ) -> Notification | None:
-    """Xabarni saqlaydi va barcha qurilmalarga yuboradi. `dedupe_key` bo'lsa — bir martalik."""
-    if dedupe_key and not await redis.set(f"notif:{dedupe_key}", "1", nx=True, ex=3 * 86400):
+    """Xabarni saqlaydi va barcha qurilmalarga yuboradi. `dedupe_key` bo'lsa — bir martalik.
+
+    Dedupe bazada (unique ustun): serverless'da bir nechta nusxa yoki takroriy cron chaqiruvi ham
+    xabarni ikki marta yubormaydi.
+    """
+    if dedupe_key and await db.scalar(select(Notification.id).where(Notification.dedupe_key == dedupe_key)):
         return None
-    n = Notification(user_id=user_id, kind=kind, title=title[:160], body=body, data=data or {})
+    n = Notification(user_id=user_id, kind=kind, title=title[:160], body=body, data=data or {}, dedupe_key=dedupe_key)
     db.add(n)
-    await db.flush()
+    try:
+        await db.flush()
+    except IntegrityError:
+        # Parallel chaqiruv shu kalitni bizdan oldin yozib qo'ydi
+        await db.rollback()
+        return None
     payload = {"title": n.title, "body": n.body, "data": {**(data or {}), "notification_id": str(n.id), "kind": kind.value}}
     devices = (await db.scalars(select(Device).where(Device.user_id == user_id))).all()
     for d in devices:

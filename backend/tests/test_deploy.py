@@ -103,3 +103,66 @@ async def test_brevo_provider(monkeypatch):
     assert sent["json"]["sender"] == {"name": "Dailer", "email": "me@gmail.com"}
     assert sent["json"]["to"] == [{"email": "ali@example.com"}]
     assert "token=t" in sent["json"]["htmlContent"]
+
+
+def test_cron_window(monkeypatch):
+    from datetime import datetime, time
+    from zoneinfo import ZoneInfo
+
+    from app.services.jobs import _same_minute
+
+    tz = ZoneInfo("Asia/Tashkent")
+    at = lambda h, m: datetime(2026, 10, 17, h, m, 20, tzinfo=tz)  # noqa: E731
+    monkeypatch.setattr(settings, "cron_window_min", 1)
+    assert _same_minute(at(21, 0), time(21, 0)) and not _same_minute(at(21, 1), time(21, 0))
+    monkeypatch.setattr(settings, "cron_window_min", 15)
+    assert _same_minute(at(21, 14), time(21, 0)) and not _same_minute(at(21, 15), time(21, 0))
+    assert not _same_minute(at(20, 59), time(21, 0))
+    assert _same_minute(at(5, 40), time(5, 0), plus_min=30)  # uyg'onish + 30 daqiqa
+
+
+async def test_notify_dedupe_in_db(client):
+    import uuid
+
+    from app.models import Notification, NotificationKind
+    from app.services import notify
+
+    data = await register(client)
+    me = (await client.get(f"{API}/me", headers=auth(data["tokens"]["access_token"]))).json()
+    uid = uuid.UUID(me["id"])
+    async with SessionLocal() as db:
+        first = await notify.send(db, uid, NotificationKind.system, "A", "b", dedupe_key="k:1")
+        again = await notify.send(db, uid, NotificationKind.system, "A", "b", dedupe_key="k:1")
+        other = await notify.send(db, uid, NotificationKind.system, "A", "b", dedupe_key="k:2")
+        assert first and again is None and other
+        from sqlalchemy import func, select
+
+        assert await db.scalar(select(func.count()).select_from(Notification)) == 2
+
+
+async def test_cron_github_oidc(client, monkeypatch):
+    import time as _time
+
+    import jwt
+    from cryptography.hazmat.primitives.asymmetric import rsa
+
+    from app.api.routes import system
+
+    key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+
+    class FakeJWKS:
+        def get_signing_key_from_jwt(self, token):
+            return type("K", (), {"key": key.public_key()})()
+
+    monkeypatch.setattr(system, "_jwks", FakeJWKS())
+    monkeypatch.setattr(settings, "cron_github_repo", "azizillo-dev/dailer")
+
+    def token(**over):
+        claims = {"iss": system.GITHUB_ISSUER, "aud": system.CRON_AUDIENCE, "repository": "azizillo-dev/dailer",
+                  "ref": "refs/heads/main", "exp": int(_time.time()) + 300, **over}
+        return jwt.encode(claims, key, algorithm="RS256")
+
+    url = f"{API}/internal/cron/tick"
+    assert (await client.post(url, headers={"Authorization": f"Bearer {token()}"})).status_code == 200
+    for bad in (token(repository="hacker/fork"), token(aud="other"), token(ref="refs/heads/dev"), token(exp=1)):
+        assert (await client.post(url, headers={"Authorization": f"Bearer {bad}"})).status_code == 404

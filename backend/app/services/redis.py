@@ -59,7 +59,9 @@ class MemoryRedis:
         return True
 
 
-redis = Redis.from_url(settings.redis_url, decode_responses=True) if settings.redis_url else MemoryRedis()
+# REDIS_URL bo'sh yoki "memory://" — Redis'siz
+_use_memory = not settings.redis_url or settings.redis_url.startswith("memory://")
+redis = MemoryRedis() if _use_memory else Redis.from_url(settings.redis_url, decode_responses=True)
 
 
 async def rate_limit(key: str, limit: int, window_seconds: int) -> None:

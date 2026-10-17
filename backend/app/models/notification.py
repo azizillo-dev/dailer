@@ -32,4 +32,6 @@ class Notification(Base):
     body: Mapped[str] = mapped_column(Text)
     data: Mapped[dict] = mapped_column(JSONB, default=dict)
     read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # Bir martalik xabarlar kaliti ("evening:<user>:<sana>") — takroriy cron chaqiruvi dublikat yaratmaydi
+    dedupe_key: Mapped[str | None] = mapped_column(String(120), unique=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
