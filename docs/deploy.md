@@ -1,77 +1,73 @@
-# Bepul deploy
+# Deploy (bepul)
 
-| Qism | Xizmat | Bepul tarif |
+Hozirgi production:
+
+| Qism | Manzil | Xizmat |
 |---|---|---|
-| Sayt (Next.js) | **Vercel** Hobby | shaxsiy/notijorat loyiha uchun |
-| API (FastAPI) | **Render** Free, Frankfurt | 750 soat/oy, 15 daqiqa so'rov bo'lmasa uxlaydi, SMTP portlari yopiq |
-| Postgres | **Supabase** Free, Frankfurt | 500 MB; 1 hafta faolsiz qolsa to'xtaydi (cron buni oldini oladi) |
-| Email | **Brevo** Free | HTTPS API, kuniga ~300 ta xat |
-| Fon vazifalari | **cron-job.org** | har daqiqada chaqiradi |
-| Redis | — | kerak emas: `REDIS_URL` bo'sh → xotiradagi o'rinbosar |
+| Sayt | https://dailer-seven.vercel.app | Vercel (loyiha `dailer`, root `apps/web`) |
+| API | https://dailer-api.vercel.app | Vercel serverless FastAPI (loyiha `dailer-api`, root `backend`, fra1) |
+| Postgres | Neon (Vercel Marketplace, Free, fra1) | `DATABASE_URL`, `DATABASE_URL_UNPOOLED` avtomatik |
+| Fon vazifalari | GitHub Actions `.github/workflows/cron.yml` | tick — 15 daqiqada, daily — Toshkent 03:00 |
+| Redis | yo'q (`REDIS_URL=memory://`) | Upstash ulash uchun shartlarni brauzerda qabul qilish kerak |
+| Email | hali sozlanmagan | Gmail SMTP yoki Brevo — pastda |
 
-Nima uchun shunday:
-- Render bepul tarifda **SMTP (25/465/587) yopiq** → xatlar Brevo API orqali (`EMAIL_PROVIDER=brevo`).
-- Render diski vaqtinchalik → rasmlar Postgres'da (`UPLOAD_STORAGE=db`).
-- Alohida worker yo'q → cron-job.org `POST /api/v1/internal/cron/tick` ni har daqiqada chaqiradi.
-  Bu API'ni ham uyg'oq tutadi (bitta servis 24/7 ≈ 720 soat < 750).
-- Neon o'rniga Supabase: cron har daqiqada bazaga murojaat qiladi, Neon'ning oylik compute soatlari yetmaydi.
+`main` ga har push — ikkala loyiha avtomatik qayta deploy bo'ladi.
 
-## 1. Supabase (Postgres)
+## Serverless'ga moslashuvlar
 
-1. supabase.com → New project, region **Frankfurt (eu-central-1)**, kuchli parol.
-2. **Connect** → **Session pooler** (IPv4) manzilini nusxalang:
-   `postgresql://postgres.<ref>:<parol>@aws-0-eu-central-1.pooler.supabase.com:5432/postgres`
-   (Render IPv6'ga ulana olmaydi — "Direct connection" emas, aynan Session pooler.)
+- `DB_NULL_POOL=true` — har so'rov o'z ulanishi; Neon pooler'siz manzili (prepared statement'lar uchun).
+- `UPLOAD_STORAGE=db` — rasmlar Postgres'da (funksiya diski vaqtinchalik).
+- Bildirishnoma dedupe — bazada (`notifications.dedupe_key` unique), Redis'da emas.
+- Worker yo'q: GitHub Actions `POST /api/v1/internal/cron/{tick,daily}` ni chaqiradi.
+  Kalit saqlanmaydi — API GitHub OIDC tokenini tekshiradi (`CRON_GITHUB_REPO=azizillo-dev/dailer`, faqat `main`).
+  `CRON_WINDOW_MIN=15` — xabarlar vaqti kelgandan keyingi 15 daqiqa ichida yuboriladi.
+- Neon Free — oyiga 100 CU-soat; 15 daqiqalik cron bilan baza oraliqda uxlaydi, limitga sig'adi.
 
-## 2. Brevo (email)
+## Migratsiyalar
 
-1. brevo.com → ro'yxatdan o'ting.
-2. **Senders, Domains & Dedicated IPs → Senders → Add a sender** — Gmail manzilingiz, kelgan xat orqali tasdiqlang.
-3. **SMTP & API → API Keys → Generate** — kalitni nusxalang.
+Vercel'da migratsiya ishlamaydi — yangi migratsiyadan keyin lokal kompyuterdan:
 
-## 3. Render (API)
+```bash
+cd backend
+vercel env pull .env.local --environment production   # DATABASE_URL_UNPOOLED
+DATABASE_URL_UNPOOLED=... python -m alembic upgrade head
+```
 
-1. render.com → **New → Blueprint** → GitHub'dagi `dailer` repo. `render.yaml` o'qiladi.
-2. So'raladigan qiymatlar:
-   - `DATABASE_URL` — 1-qadamdagi manzil
-   - `PUBLIC_URL` — `https://dailer-api.onrender.com` (Render bergan nom)
-   - `WEB_URL`, `CORS_ORIGINS` — Vercel manzili (`https://dailer.vercel.app`)
-   - `GOOGLE_CLIENT_IDS` — Google Web Client ID
-   - `BREVO_API_KEY`, `MAIL_FROM` — `Dailer <siz@gmail.com>`
-   - `VAPID_*`, AI kalitlari — ixtiyoriy
-3. Deploy tugagach: `https://<nom>.onrender.com/health` → `{"status":"ok"}`.
-   Migratsiyalar har ishga tushishda o'zi bajariladi (`alembic upgrade head`).
-4. **Environment** bo'limidan `CRON_SECRET` qiymatini nusxalang (Render o'zi yaratgan).
+Push'dan **oldin** migratsiyani qo'llang (yangi kod eski sxemada ishlamasligi mumkin).
 
-## 4. cron-job.org
+## Env o'zgaruvchilarini o'zgartirish
 
-Ikkita vazifa (Advanced → Request method **POST**, Header `X-Cron-Secret: <CRON_SECRET>`):
+```bash
+cd backend && vercel env add NAME production    # qiymat so'raladi
+```
 
-| URL | Jadval |
-|---|---|
-| `https://<nom>.onrender.com/api/v1/internal/cron/tick` | har daqiqada |
-| `https://<nom>.onrender.com/api/v1/internal/cron/daily` | har kuni 03:00 |
+Keyin qayta deploy kerak: `main` ga push yoki Vercel dashboard → Redeploy.
 
-## 5. Vercel (sayt)
+## Hali qilinadigan
 
-1. vercel.com → **Add New → Project** → `dailer` repo, **Root Directory: `apps/web`**.
-2. Environment Variables:
-   - `NEXT_PUBLIC_API_URL` = `https://<nom>.onrender.com`
-   - `NEXT_PUBLIC_GOOGLE_CLIENT_ID` = Google Web Client ID
-   - `NEXT_PUBLIC_VAPID_PUBLIC_KEY` = (ixtiyoriy)
-3. Deploy. Manzilni Render'dagi `WEB_URL` va `CORS_ORIGINS` ga yozing.
+1. **Google OAuth** — Google Cloud Console'da Web va Android Client ID:
+   - Web: Authorized JavaScript origins — `https://dailer-seven.vercel.app`, `http://localhost:3000`
+   - Android: package `uz.dailer.app`, SHA-1 (debug) `5E:8F:16:06:2E:A3:CD:2C:4A:0D:54:78:76:BA:A6:F3:8C:AB:F6:25`
+   - API: `GOOGLE_CLIENT_IDS=<web id>`; sayt: `NEXT_PUBLIC_GOOGLE_CLIENT_ID=<web id>`;
+     mobil: `app.json` → `extra.googleWebClientId`.
+2. **Email** (Vercel SMTP portlarini to'smaydi):
+   - Gmail: `SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=587`, `SMTP_TLS=true`, `SMTP_USER=siz@gmail.com`,
+     `SMTP_PASSWORD=<App password>`, `MAIL_FROM=Dailer <siz@gmail.com>`
+   - yoki Brevo: `EMAIL_PROVIDER=brevo`, `BREVO_API_KEY`, `MAIL_FROM`.
+3. **Upstash Redis** (ixtiyoriy) — AI kunlik limiti va rate limit nusxalar orasida umumiy bo'lishi uchun:
+   `vercel integration add upstash/upstash-kv --plan free -m primaryRegion=fra1` (avval shartlarni brauzerda qabul qilish).
+4. AI kalitlari (`GEMINI_API_KEY`, `GROQ_API_KEY`, ...) — bo'lmasa shablon javob ishlaydi.
 
-## 6. Google OAuth
+## Super admin
 
-Google Cloud Console → Credentials → Web client → **Authorized JavaScript origins** ga
-Vercel manzilini qo'shing (`https://dailer.vercel.app`).
-
-## 7. Super admin
-
-Saytda `SUPERADMIN_EMAIL` (ceonabiyev@gmail.com) bilan ro'yxatdan o'ting (yoki Google bilan kiring) —
+`SUPERADMIN_EMAIL` (ceonabiyev@gmail.com) bilan ro'yxatdan o'ting yoki Google bilan kiring —
 email tasdiqlangan zahoti super admin roli avtomatik beriladi. Kirgach `/admin` da 2FA'ni sozlang.
 
 ## Mobil ilova
 
-`apps/mobile/app.json` → `extra.apiUrl` = Render manzili, `extra.googleWebClientId` = Web Client ID.
-Google bilan kirish va ekran vaqti native modul — Expo Go'da emas, `npx expo run:android` yoki EAS build'da ishlaydi.
+`apps/mobile/app.json` → `extra.apiUrl` = `https://dailer-api.vercel.app` (production build uchun).
+Google bilan kirish va ekran vaqti — native modul: Expo Go'da emas, `npx expo run:android` yoki EAS build'da.
+
+## Muqobil: Render
+
+`render.yaml` — Render Free + Supabase uchun blueprint (Render'da SMTP yopiq — Brevo kerak).
