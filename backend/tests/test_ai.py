@@ -58,7 +58,9 @@ async def test_chat_streams_and_falls_back_to_next_provider(client, providers):
         calls.append(request.url.host)
         body = json.loads(request.content)
         assert body["stream"] is True and body["messages"][0]["role"] == "system"
-        if "googleapis" in request.url.host:
+        if "groq" in request.url.host:
+            # gpt-oss — fikrlash tokenlari tejaladi
+            assert body["reasoning_effort"] == "low"
             return httpx.Response(429, json={"error": {"message": "Resource exhausted: quota per day"}})
         return httpx.Response(200, content=sse("Zo'r ", "ketyapsiz!"), headers={"content-type": "text/event-stream"})
 
@@ -71,15 +73,15 @@ async def test_chat_streams_and_falls_back_to_next_provider(client, providers):
     assert events[0][0] == "meta"
     text = "".join(d["t"] for e, d in events if e == "token")
     assert text == "Zo'r ketyapsiz!"
-    assert events[-1] == ("done", {"message_id": events[-1][1]["message_id"], "provider": "groq"})
-    assert calls == ["generativelanguage.googleapis.com", "api.groq.com"]
+    assert events[-1] == ("done", {"message_id": events[-1][1]["message_id"], "provider": "gemini"})
+    assert calls == ["api.groq.com", "generativelanguage.googleapis.com"]
 
-    # Gemini kunlik kvota tugagani uchun cooldown'da — keyingi so'rov to'g'ri groq'ga
-    assert await redis.ttl("ai:cooldown:gemini") > 3000
+    # Groq kunlik kvota tugagani uchun cooldown'da — keyingi so'rov to'g'ri Gemini'ga
+    assert await redis.ttl("ai:cooldown:groq") > 3000
     calls.clear()
     conv_id = events[0][1]["conversation_id"]
     await client.post(f"{API}/ai/chat", json={"message": "Rahmat", "conversation_id": conv_id}, headers=h)
-    assert calls == ["api.groq.com"]
+    assert calls == ["generativelanguage.googleapis.com"]
 
     usage = (await client.get(f"{API}/ai/usage", headers=h)).json()
     assert usage["used"] == 2 and usage["limit"] == 15
@@ -146,11 +148,11 @@ async def test_admin_providers(client, providers):
 
     admin = await make_admin(client)
     rows = (await client.get(f"{API}/admin/ai/providers", headers=admin)).json()
-    assert [r["code"] for r in rows] == ["gemini", "groq", "openrouter", "deepseek", "grok"]
+    assert [r["code"] for r in rows] == ["groq", "gemini", "openrouter", "deepseek", "grok"]
     assert rows[0]["has_key"] is True and rows[2]["has_key"] is False
     res = await client.patch(
-        f"{API}/admin/ai/providers/{rows[1]['id']}", json={"priority": 5, "model": "llama-3.1-8b-instant"}, headers=admin
+        f"{API}/admin/ai/providers/{rows[1]['id']}", json={"priority": 5, "model": "gemini-flash-latest"}, headers=admin
     )
     assert res.json()["priority"] == 5
     rows = (await client.get(f"{API}/admin/ai/providers", headers=admin)).json()
-    assert rows[0]["code"] == "groq"
+    assert rows[0]["code"] == "gemini"

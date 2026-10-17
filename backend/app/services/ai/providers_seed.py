@@ -2,14 +2,15 @@
 
 PROVIDERS = [
     {
-        "code": "gemini", "name": "Google Gemini", "priority": 10, "is_paid": False, "enabled": True,
+        "code": "gemini", "name": "Google Gemini", "priority": 20, "is_paid": False, "enabled": True,
         "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-        "model": "gemini-2.5-flash", "daily_request_cap": 1400, "api_key_env": "GEMINI_API_KEY",
+        # "-latest" — Google eski modelni yopganda ham ishlayveradi
+        "model": "gemini-flash-lite-latest", "daily_request_cap": 1400, "api_key_env": "GEMINI_API_KEY",
     },
     {
-        "code": "groq", "name": "Groq", "priority": 20, "is_paid": False, "enabled": True,
+        "code": "groq", "name": "Groq", "priority": 10, "is_paid": False, "enabled": True,
         "base_url": "https://api.groq.com/openai/v1",
-        "model": "llama-3.3-70b-versatile", "daily_request_cap": 950, "api_key_env": "GROQ_API_KEY",
+        "model": "openai/gpt-oss-120b", "daily_request_cap": 950, "api_key_env": "GROQ_API_KEY",
     },
     {
         "code": "openrouter", "name": "OpenRouter (free)", "priority": 30, "is_paid": False, "enabled": True,

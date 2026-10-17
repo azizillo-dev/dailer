@@ -112,6 +112,9 @@ async def _stream_one(p: AIProvider, messages: list[dict], max_tokens: int) -> A
         headers["HTTP-Referer"] = settings.web_url
         headers["X-Title"] = "Dailer"
     payload = {"model": p.model, "messages": messages, "max_tokens": max_tokens, "temperature": 0.6, "stream": True}
+    if "gpt-oss" in p.model:
+        # Fikrlash tokenlari max_tokens'ga kiradi — qisqa javoblar uchun past daraja yetarli va tez
+        payload["reasoning_effort"] = "low"
 
     timeout = httpx.Timeout(settings.ai_timeout_seconds, connect=8.0)
     async with httpx.AsyncClient(timeout=timeout, transport=transport) as client:
