@@ -106,6 +106,7 @@
   --color-coffee: var(--coffee);
   --color-mocha: var(--mocha);
   --color-caramel: var(--caramel);
+  --color-caramel-deep: var(--caramel-deep);
   --color-latte: var(--latte);
   --color-cream: var(--cream);
   --color-paper: var(--paper);
@@ -218,6 +219,14 @@ body > * {
 }
 
 /* ── Landing demo ───────────────────────────────────────────────── */
+
+@keyframes marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+.marquee {
+  animation: marquee 45s linear infinite;
+}
 
 @keyframes grow {
   from { transform: scaleY(0); }

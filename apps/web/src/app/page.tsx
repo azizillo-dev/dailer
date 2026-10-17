@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { DayStory } from "@/components/landing/DayStory";
+import { AIDemo, FAQ, Features, FinalCTA, Motto, Quotes, StatsShowcase } from "@/components/landing/Sections";
 import { LangSwitch } from "@/components/LangSwitch";
 import { SiteHeader } from "@/components/SiteHeader";
 import { TodayDemo } from "@/components/TodayDemo";
@@ -17,7 +19,7 @@ export default function Home() {
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto w-full max-w-6xl px-4 pb-24 sm:px-6">
+      <main className="mx-auto w-full max-w-6xl px-4 sm:px-6">
         <section className="grid items-center gap-14 pt-6 sm:pt-12 lg:grid-cols-[1.1fr_1fr] lg:gap-10 lg:pt-16">
           <div>
             <p className="eyebrow animate-rise">{t("hero.eyebrow")}</p>
@@ -51,7 +53,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="mt-28 grid gap-4 md:grid-cols-3">
+        <section className="mt-24 grid gap-4 md:grid-cols-3">
           {PILLARS.map((p) => (
             <article key={p.n} className="card p-7">
               <span className="font-serif text-sm text-highlight">{p.n}</span>
@@ -61,6 +63,19 @@ export default function Home() {
           ))}
         </section>
       </main>
+
+      <div className="mx-auto mt-24 max-w-6xl px-4 text-center sm:px-6">
+        <p className="eyebrow">{t("l.story.eyebrow")}</p>
+        <h2 className="mt-3 font-serif text-4xl tracking-tight sm:text-5xl">{t("l.story.title")}</h2>
+      </div>
+      <DayStory />
+      <Quotes />
+      <Features />
+      <StatsShowcase />
+      <AIDemo />
+      <Motto />
+      <FAQ />
+      <FinalCTA />
       <footer className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-4 border-t border-line px-4 py-8 text-sm text-ink-faint sm:flex-row sm:px-6">
         <span>© {new Date().getFullYear()} Dailer · “{t("brand.motto")}”</span>
         <LangSwitch />

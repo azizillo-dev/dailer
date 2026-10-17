@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { appEn, appRu, appUz, type AppKey } from "./messages-app";
+import { landingEn, landingRu, landingUz, type LandingKey } from "./messages-landing";
 
 export type Lang = "uz" | "ru" | "en";
 export const LANGS: { code: Lang; label: string }[] = [
@@ -98,7 +99,7 @@ const uz = {
 
 type BaseKey = keyof typeof uz;
 type Messages = Record<BaseKey, string>;
-export type MessageKey = BaseKey | AppKey;
+export type MessageKey = BaseKey | AppKey | LandingKey;
 
 const ru: Messages = {
   "brand.motto": "Don't forget why you started!",
@@ -249,9 +250,9 @@ const en: Messages = {
 };
 
 const DICTS: Record<Lang, Record<MessageKey, string>> = {
-  uz: { ...uz, ...appUz },
-  ru: { ...ru, ...appRu },
-  en: { ...en, ...appEn },
+  uz: { ...uz, ...appUz, ...landingUz },
+  ru: { ...ru, ...appRu, ...landingRu },
+  en: { ...en, ...appEn, ...landingEn },
 };
 
 type Vars = Record<string, string | number>;
