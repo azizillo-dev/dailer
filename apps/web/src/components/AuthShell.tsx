@@ -1,5 +1,7 @@
 "use client";
 
+import { usePathname } from "next/navigation";
+import { AndroidPrompt, DownloadBar } from "./AppDownload";
 import { LangSwitch } from "./LangSwitch";
 import { Logo, LogoMark } from "./Logo";
 import { useI18n } from "@/lib/i18n";
@@ -14,18 +16,24 @@ export function AuthShell({
   children: React.ReactNode;
 }) {
   const { t } = useI18n();
+  const pathname = usePathname();
+  // Ilovani o'rnatish taklifi — akkaunt ochish/kirishdan oldin
+  const offerApp = pathname === "/login" || pathname === "/register";
   return (
+    <>
+    {offerApp && <DownloadBar />}
+    {offerApp && <AndroidPrompt />}
     <div className="grid min-h-dvh lg:grid-cols-[1fr_1.1fr]">
       {/* Chap panel — faqat katta ekranda */}
-      <aside className="relative hidden overflow-hidden bg-espresso p-12 text-cream lg:flex lg:flex-col lg:justify-between">
-        <Logo className="text-cream" />
+      <aside className="bg-sunrise relative hidden overflow-hidden p-12 text-espresso lg:flex lg:flex-col lg:justify-between">
+        <Logo className="text-espresso" />
         <div>
-          <LogoMark className="mb-8 h-14 w-14 text-cream" />
+          <LogoMark className="mb-8 h-14 w-14 text-espresso" />
           <p className="font-serif text-5xl leading-[1.08] tracking-tight">“{t("brand.motto")}”</p>
-          <p className="mt-6 max-w-md text-lg leading-relaxed text-latte/80">{t("hero.lead")}</p>
+          <p className="mt-6 max-w-md text-lg leading-relaxed text-espresso/75">{t("hero.lead")}</p>
         </div>
         <div
-          className="pointer-events-none absolute -bottom-40 -right-32 h-96 w-96 rounded-full bg-caramel/20 blur-3xl"
+          className="pointer-events-none absolute -bottom-40 -right-32 h-96 w-96 rounded-full bg-cream/30 blur-3xl"
           aria-hidden
         />
       </aside>
@@ -50,6 +58,7 @@ export function AuthShell({
         </div>
       </main>
     </div>
+    </>
   );
 }
 

@@ -142,7 +142,7 @@ class Profile(TimestampMixin, Base):
     birth_year: Mapped[int | None] = mapped_column(SmallInteger)
     gender: Mapped[Gender] = mapped_column(pg_enum(Gender, "gender"), default=Gender.unspecified)
     language: Mapped[Language] = mapped_column(pg_enum(Language, "language"), default=Language.uz)
-    theme: Mapped[Theme] = mapped_column(pg_enum(Theme, "theme"), default=Theme.system)
+    theme: Mapped[Theme] = mapped_column(pg_enum(Theme, "theme"), default=Theme.light)
     timezone: Mapped[str] = mapped_column(String(64), default="Asia/Tashkent")
     city: Mapped[str | None] = mapped_column(String(120))
     latitude: Mapped[float | None] = mapped_column(Numeric(9, 6))

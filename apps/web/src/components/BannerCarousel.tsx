@@ -149,9 +149,9 @@ export function BannerCarousel({ placement = "home_top" }: { placement?: string 
               <button
                 type="button"
                 onClick={() => open(b)}
-                className={`relative flex aspect-[16/9] w-full flex-col justify-end overflow-hidden rounded-3xl p-5 text-left text-cream sm:aspect-[21/8] sm:p-7 ${
+                className={`relative flex aspect-[16/9] w-full flex-col justify-end overflow-hidden rounded-3xl p-5 text-left sm:aspect-[21/8] sm:p-7 ${
                   b.link_url ? "cursor-pointer" : "cursor-default"
-                } ${image ? "bg-espresso" : "bg-gradient-to-br from-coffee via-espresso to-espresso"}`}
+                } ${image ? "bg-espresso text-cream" : "bg-sunrise text-espresso"}`}
               >
                 {image && (
                   <picture>
@@ -161,9 +161,9 @@ export function BannerCarousel({ placement = "home_top" }: { placement?: string 
                   </picture>
                 )}
                 {!image && (
-                  <span className="pointer-events-none absolute -right-10 -top-16 h-56 w-56 rounded-full bg-caramel/25 blur-2xl" aria-hidden />
+                  <span className="pointer-events-none absolute -right-10 -top-16 h-56 w-56 rounded-full bg-cream/30 blur-2xl" aria-hidden />
                 )}
-                <span className="absolute inset-0 bg-gradient-to-t from-espresso/85 via-espresso/30 to-transparent" aria-hidden />
+                {image && <span className="absolute inset-0 bg-gradient-to-t from-espresso/85 via-espresso/30 to-transparent" aria-hidden />}
                 <span className="relative">
                   {b.kind === "ad" && (
                     <span className="mb-2 inline-block rounded-full bg-cream/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest">
@@ -171,7 +171,7 @@ export function BannerCarousel({ placement = "home_top" }: { placement?: string 
                     </span>
                   )}
                   <span className="block font-serif text-2xl leading-tight sm:text-3xl">{tr(b.title, lang)}</span>
-                  {subtitle && <span className="mt-1.5 block max-w-xl text-sm text-cream/80">{subtitle}</span>}
+                  {subtitle && <span className="mt-1.5 block max-w-xl text-sm opacity-80">{subtitle}</span>}
                   {b.link_url && (
                     <span className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-latte">
                       {cta || "→"} {cta && <ArrowUpRight className="h-4 w-4" />}

@@ -40,7 +40,7 @@ export async function setupCategories() {
       name: "Kun tartibi",
       importance: Notifications.AndroidImportance.HIGH,
       vibrationPattern: [0, 200, 120, 200],
-      lightColor: "#c08552",
+      lightColor: "#f28c45",
     });
   }
 }

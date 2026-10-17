@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { AndroidIcon } from "@/components/AppDownload";
 import { DayStory } from "@/components/landing/DayStory";
 import { AIDemo, FAQ, Features, FinalCTA, Motto, Quotes, StatsShowcase } from "@/components/landing/Sections";
 import { LangSwitch } from "@/components/LangSwitch";
@@ -42,6 +43,9 @@ export default function Home() {
                 {t("hero.secondary")}
               </Link>
             </div>
+            <Link href="/download" className="animate-rise mt-4 inline-flex items-center gap-2 text-sm font-semibold text-highlight hover:underline" style={{ animationDelay: "0.36s" }}>
+              <AndroidIcon className="h-4 w-4" /> {t("dl.button")} →
+            </Link>
             <p className="animate-rise mt-10 font-serif text-lg italic text-ink-faint" style={{ animationDelay: "0.4s" }}>
               “{t("brand.motto")}”
             </p>

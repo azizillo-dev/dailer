@@ -39,17 +39,17 @@ _FOOTER = "Don't forget why you started!"
 
 def _html(heading: str, text: str, button: str, url: str) -> str:
     return f"""<!doctype html>
-<html><body style="margin:0;background:#F7F0E6;font-family:Arial,sans-serif;color:#2B1D14">
+<html><body style="margin:0;background:#FFF8EF;font-family:Arial,sans-serif;color:#2A1F17">
 <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 16px">
-<table width="100%" style="max-width:480px;background:#FFFDF9;border-radius:16px;padding:32px">
-<tr><td style="font-size:22px;font-weight:bold;color:#4A3426;padding-bottom:4px">Dailer</td></tr>
+<table width="100%" style="max-width:480px;background:#FFFFFF;border-radius:20px;padding:32px;border:1px solid #F1E3D2">
+<tr><td style="font-size:22px;font-weight:bold;color:#C4571E;padding-bottom:4px">Dailer</td></tr>
 <tr><td style="font-size:20px;padding:16px 0 8px">{heading}</td></tr>
-<tr><td style="font-size:15px;line-height:1.6;color:#4A3426">{text}</td></tr>
+<tr><td style="font-size:15px;line-height:1.6;color:#6E5B4C">{text}</td></tr>
 <tr><td style="padding:28px 0">
-<a href="{url}" style="background:#4A3426;color:#F7F0E6;text-decoration:none;padding:14px 24px;
+<a href="{url}" style="background:#F28C45;color:#2A1F17;font-weight:bold;text-decoration:none;padding:14px 24px;
 border-radius:999px;font-size:15px;display:inline-block">{button}</a></td></tr>
-<tr><td style="font-size:12px;color:#8A7362;word-break:break-all">{url}</td></tr>
-<tr><td style="font-size:13px;color:#C08552;padding-top:24px;font-style:italic">{_FOOTER}</td></tr>
+<tr><td style="font-size:12px;color:#A3907F;word-break:break-all">{url}</td></tr>
+<tr><td style="font-size:13px;color:#C4571E;padding-top:24px;font-style:italic">{_FOOTER}</td></tr>
 </table></td></tr></table></body></html>"""
 
 

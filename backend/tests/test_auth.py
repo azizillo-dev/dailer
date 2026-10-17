@@ -215,7 +215,10 @@ async def test_protected_route_requires_token(client):
     assert res.json()["error"]["code"] == "not_authenticated"
 
 
-async def test_google_not_configured(client):
+async def test_google_not_configured(client, monkeypatch):
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "google_client_ids", "")
     res = await client.post(f"{API}/auth/google", json={"id_token": "x"})
     assert res.status_code == 503
     assert res.json()["error"]["code"] == "google_not_configured"

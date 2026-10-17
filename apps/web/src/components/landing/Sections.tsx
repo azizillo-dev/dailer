@@ -210,14 +210,14 @@ export function Quotes() {
 export function Motto() {
   const { t } = useI18n();
   return (
-    <section className="relative overflow-hidden bg-espresso py-28 text-cream sm:py-40">
-      <div className="pointer-events-none absolute -left-24 top-10 h-80 w-80 rounded-full bg-caramel/20 blur-3xl" aria-hidden />
+    <section className="bg-sunrise relative overflow-hidden py-28 text-espresso sm:py-40">
+      <div className="pointer-events-none absolute -left-24 top-10 h-80 w-80 rounded-full bg-cream/30 blur-3xl" aria-hidden />
       <div className="relative mx-auto w-full max-w-4xl px-4 text-center sm:px-6">
         <Reveal>
-          <LogoMark className="mx-auto h-14 w-14 text-cream" />
-          <p className="mx-auto mt-8 max-w-xl text-lg leading-relaxed text-latte/80">{t("l.motto.text")}</p>
+          <LogoMark className="mx-auto h-14 w-14 text-espresso" />
+          <p className="mx-auto mt-8 max-w-xl text-lg leading-relaxed text-espresso/75">{t("l.motto.text")}</p>
           <p className="mt-8 font-serif text-[clamp(2.6rem,8vw,5.5rem)] leading-[1.02] tracking-tight">“{t("brand.motto")}”</p>
-          <p className="mx-auto mt-8 max-w-xl leading-relaxed text-latte/70">{t("l.motto.goal")}</p>
+          <p className="mx-auto mt-8 max-w-xl leading-relaxed text-espresso/70">{t("l.motto.goal")}</p>
         </Reveal>
       </div>
     </section>

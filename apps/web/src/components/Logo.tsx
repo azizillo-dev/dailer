@@ -4,7 +4,7 @@ import Link from "next/link";
 export function LogoMark({ className = "" }: { className?: string }) {
   return (
     <svg viewBox="0 0 32 32" className={className} aria-hidden>
-      <path d="M4 22a12 12 0 0 1 24 0Z" fill="var(--caramel)" />
+      <path d="M4 22a12 12 0 0 1 24 0Z" fill="var(--logo-sun, var(--caramel))" />
       <rect x="2" y="24.5" width="28" height="2.5" rx="1.25" fill="currentColor" />
     </svg>
   );

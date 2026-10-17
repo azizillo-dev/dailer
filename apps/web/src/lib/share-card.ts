@@ -54,23 +54,23 @@ export async function renderShareCard(d: ShareData): Promise<Blob> {
 
   // Fon
   const g = ctx.createLinearGradient(0, 0, 0, H);
-  g.addColorStop(0, "#2b1d14");
-  g.addColorStop(0.6, "#3a2719");
-  g.addColorStop(1, "#6b4e3d");
+  g.addColorStop(0, "#2a1f17");
+  g.addColorStop(0.55, "#4a2a18");
+  g.addColorStop(1, "#c4571e");
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, W, H);
   const glow = ctx.createRadialGradient(W * 0.85, 260, 0, W * 0.85, 260, 520);
-  glow.addColorStop(0, "rgba(192,133,82,0.45)");
-  glow.addColorStop(1, "rgba(192,133,82,0)");
+  glow.addColorStop(0, "rgba(255,170,90,0.55)");
+  glow.addColorStop(1, "rgba(255,170,90,0)");
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, W, H);
 
   // Logo
-  ctx.fillStyle = "#c08552";
+  ctx.fillStyle = "#f28c45";
   ctx.beginPath();
   ctx.arc(120, 170, 34, Math.PI, 0);
   ctx.fill();
-  ctx.fillStyle = "#f7f0e6";
+  ctx.fillStyle = "#fff8ef";
   ctx.fillRect(80, 182, 80, 8);
   ctx.font = `600 52px ${serif}`;
   ctx.fillText("Dailer", 180, 190);
@@ -85,7 +85,7 @@ export async function renderShareCard(d: ShareData): Promise<Blob> {
   // Katta halqa va ball
   ring(ctx, W / 2, 720, 250, 38, (d.score ?? 0) / 100);
   ctx.textAlign = "center";
-  ctx.fillStyle = "#f7f0e6";
+  ctx.fillStyle = "#fff8ef";
   ctx.font = `400 200px ${serif}`;
   ctx.fillText(d.score == null ? "–" : `${Math.round(d.score)}`, W / 2, 770);
   ctx.font = `600 36px ${sans}`;
@@ -94,7 +94,7 @@ export async function renderShareCard(d: ShareData): Promise<Blob> {
 
   // Streak
   ctx.font = `400 96px ${serif}`;
-  ctx.fillStyle = "#f7f0e6";
+  ctx.fillStyle = "#fff8ef";
   ctx.fillText(`🔥 ${d.streak}`, W / 2, 1110);
   ctx.font = `600 34px ${sans}`;
   ctx.fillStyle = "rgba(247,240,230,0.7)";
@@ -107,7 +107,7 @@ export async function renderShareCard(d: ShareData): Promise<Blob> {
     const x = step * (i + 1);
     ring(ctx, x, 1340, 70, 14, (c.score ?? 0) / 100);
     ctx.font = `600 40px ${sans}`;
-    ctx.fillStyle = "#f7f0e6";
+    ctx.fillStyle = "#fff8ef";
     ctx.fillText(c.score == null ? "–" : `${Math.round(c.score)}%`, x, 1354);
     ctx.font = `600 28px ${sans}`;
     ctx.fillStyle = "rgba(247,240,230,0.7)";
@@ -116,7 +116,7 @@ export async function renderShareCard(d: ShareData): Promise<Blob> {
 
   // Maqsad va shior
   ctx.font = `italic 400 46px ${serif}`;
-  ctx.fillStyle = "#f7f0e6";
+  ctx.fillStyle = "#fff8ef";
   let y = 1620;
   if (d.goal) {
     for (const line of wrap(ctx, `“${d.goal}”`, W - 200).slice(0, 2)) {

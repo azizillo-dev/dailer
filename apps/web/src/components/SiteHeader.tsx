@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { DownloadBar } from "./AppDownload";
 import { LangSwitch } from "./LangSwitch";
 import { Logo } from "./Logo";
 import { useAuth } from "@/lib/auth";
@@ -9,7 +11,10 @@ import { useI18n } from "@/lib/i18n";
 export function SiteHeader() {
   const { t } = useI18n();
   const { me } = useAuth();
+  const pathname = usePathname();
   return (
+    <>
+    {!me && pathname !== "/download" && <DownloadBar />}
     <header className="mx-auto flex h-20 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
       <Logo />
       <div className="flex items-center gap-2 sm:gap-3">
@@ -32,5 +37,6 @@ export function SiteHeader() {
         )}
       </div>
     </header>
+    </>
   );
 }

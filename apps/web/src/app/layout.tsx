@@ -28,14 +28,11 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f7f0e6" },
-    { media: "(prefers-color-scheme: dark)", color: "#1c130d" },
-  ],
+  themeColor: "#fff8ef",
 };
 
 // Birinchi chizishdan oldin: mavzu, til va splash ko'rsatilganmi — miltillash bo'lmasin
-const boot = `(function(){try{var d=document.documentElement;var t=localStorage.getItem('dailer.theme');if(t==='light'||t==='dark')d.dataset.theme=t;var l=localStorage.getItem('dailer.lang');if(l)d.lang=l;if(sessionStorage.getItem('dailer.splash'))d.dataset.splash='seen';else sessionStorage.setItem('dailer.splash','1');}catch(e){}})();`;
+const boot = `(function(){try{var d=document.documentElement;var t=localStorage.getItem('dailer.theme');if(t==='system')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';d.dataset.theme=t==='dark'?'dark':'light';var l=localStorage.getItem('dailer.lang');if(l)d.lang=l;if(sessionStorage.getItem('dailer.splash'))d.dataset.splash='seen';else sessionStorage.setItem('dailer.splash','1');}catch(e){}})();`;
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (

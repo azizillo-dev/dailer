@@ -86,7 +86,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   // Yangi qurilmada profildagi mavzuni qo'llash
   useEffect(() => {
-    if (me && storedTheme() === "system" && me.profile.theme !== "system") applyTheme(me.profile.theme);
+    if (me && storedTheme() === null && me.profile.theme !== "light") applyTheme(me.profile.theme);
   }, [me]);
 
   useEffect(() => {

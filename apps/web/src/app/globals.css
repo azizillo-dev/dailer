@@ -1,91 +1,75 @@
 @import "tailwindcss";
 
 /* ── Dailer dizayn tizimi ──────────────────────────────────────────
-   Palitra: espresso · kofe · mokko · karamel · latte · krem
+   "Krem tong": yorqin krem fon, oppoq kartalar, jonli o'rik-amber urg'u,
+   toza yashil "bajarildi". Qorong'i rejim — jigarrang emas, iliq ko'mir.
+   Standart holat — yorug'; qorong'i faqat tanlanganda (data-theme).
    Faqat transform/opacity animatsiyalari — 60 fps, qaltiramaydi.
    ─────────────────────────────────────────────────────────────── */
 
 :root {
-  --espresso: #2b1d14;
+  /* Brend ranglari (mavzudan qat'i nazar) */
+  --espresso: #2a1f17;
   --coffee: #4a3426;
-  --mocha: #6b4e3d;
-  --caramel: #c08552;
-  --caramel-deep: #a96c3b;
-  --latte: #e8d5bc;
-  --cream: #f7f0e6;
-  --paper: #fffdf9;
+  --mocha: #7a5a44;
+  --caramel: #f28c45;
+  --caramel-deep: #c4571e;
+  --latte: #f9dfc4;
+  --cream: #fff8ef;
+  --paper: #ffffff;
 
   --bg: var(--cream);
   --surface: var(--paper);
-  --surface-2: #f1e6d6;
+  --surface-2: #fdeedd;
   --ink: var(--espresso);
-  --ink-soft: #6f5847;
-  --ink-faint: #a08a77;
-  --line: #e3d3bf;
-  --accent: var(--coffee);
-  --accent-ink: var(--cream);
-  --highlight: var(--caramel);
-  --success: #5d7a4a;
-  --danger: #a5462f;
-  --grain-opacity: 0.35;
-  --shadow: 0 1px 2px rgb(43 29 20 / 0.06), 0 8px 24px -12px rgb(43 29 20 / 0.18);
+  --ink-soft: #6e5b4c;
+  --ink-faint: #a3907f;
+  --line: #f1e3d2;
+  --accent: var(--caramel);
+  --accent-ink: var(--espresso);
+  --highlight: var(--caramel-deep);
+  --success: #2f9e6b;
+  --danger: #d9483b;
+  --grain-opacity: 0.18;
+  --shadow: 0 1px 2px rgb(196 87 30 / 0.06), 0 10px 28px -14px rgb(196 87 30 / 0.28);
 
   /* Ketma-ket shkala (bitta rang, ochdan to'qqa): 0–100% bajarish */
-  --seq-0: #efe2d0;
-  --seq-1: #e2c39c;
-  --seq-2: #d2a06c;
-  --seq-3: #b47942;
-  --seq-4: #7c4f2b;
+  --seq-0: #fcecd9;
+  --seq-1: #f9cd9f;
+  --seq-2: #f5a866;
+  --seq-3: #e57e36;
+  --seq-4: #b5521e;
 
   color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #1c130d;
-    --surface: #2b1d14;
-    --surface-2: #35251a;
-    --ink: var(--cream);
-    --ink-soft: #cdb89f;
-    --ink-faint: #8f7765;
-    --line: #47331f;
-    --accent: var(--caramel);
-    --accent-ink: var(--espresso);
-    --highlight: #d9a06d;
-    --success: #8fae78;
-    --danger: #e07a5f;
-    --grain-opacity: 0.18;
-    --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 30px -12px rgb(0 0 0 / 0.6);
-    --seq-0: #3a2a1e;
-    --seq-1: #5e4129;
-    --seq-2: #8d6037;
-    --seq-3: #c08552;
-    --seq-4: #e8b984;
-    color-scheme: dark;
-  }
+:root[data-theme="dark"] {
+  --bg: #171411;
+  --surface: #211d19;
+  --surface-2: #2b2621;
+  --ink: #fff4e8;
+  --ink-soft: #c9b8a6;
+  --ink-faint: #8f8072;
+  --line: #352e28;
+  --accent: #ff9a52;
+  --accent-ink: #1a140f;
+  --highlight: #ffae6e;
+  --success: #4cc38a;
+  --danger: #ff7a66;
+  --grain-opacity: 0.08;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.35), 0 12px 30px -14px rgb(0 0 0 / 0.7);
+  --seq-0: #2b2621;
+  --seq-1: #5a3a22;
+  --seq-2: #9a5a2c;
+  --seq-3: #e07b39;
+  --seq-4: #ffb878;
+  color-scheme: dark;
 }
 
-:root[data-theme="dark"] {
-  --bg: #1c130d;
-  --surface: #2b1d14;
-  --surface-2: #35251a;
-  --ink: var(--cream);
-  --ink-soft: #cdb89f;
-  --ink-faint: #8f7765;
-  --line: #47331f;
-  --accent: var(--caramel);
-  --accent-ink: var(--espresso);
-  --highlight: #d9a06d;
-  --success: #8fae78;
-  --danger: #e07a5f;
-  --grain-opacity: 0.18;
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 30px -12px rgb(0 0 0 / 0.6);
-  --seq-0: #3a2a1e;
-  --seq-1: #5e4129;
-  --seq-2: #8d6037;
-  --seq-3: #c08552;
-  --seq-4: #e8b984;
-  color-scheme: dark;
+/* Yorqin "quyosh chiqishi" gradienti — katta urg'u bloklari uchun (matn — espresso) */
+@utility bg-sunrise {
+  background: linear-gradient(150deg, #ffbe72 0%, #f28c45 48%, #e2603a 100%);
+  --logo-sun: #fff8ef;
 }
 
 @theme inline {

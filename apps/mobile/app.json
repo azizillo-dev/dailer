@@ -6,12 +6,12 @@
     "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#2b1d14"
+      "backgroundColor": "#fff8ef"
     },
     "ios": {
       "supportsTablet": false,
@@ -24,7 +24,7 @@
       "package": "uz.dailer.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#2b1d14"
+        "backgroundColor": "#fff8ef"
       },
       "edgeToEdgeEnabled": true,
       "permissions": [
@@ -32,7 +32,8 @@
         "SCHEDULE_EXACT_ALARM",
         "VIBRATE",
         "ACCESS_COARSE_LOCATION"
-      ]
+      ],
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -47,7 +48,7 @@
         "expo-notifications",
         {
           "icon": "./assets/notification-icon.png",
-          "color": "#c08552"
+          "color": "#f28c45"
         }
       ],
       [
@@ -62,7 +63,7 @@
           "image": "./assets/splash-icon.png",
           "imageWidth": 160,
           "resizeMode": "contain",
-          "backgroundColor": "#2b1d14"
+          "backgroundColor": "#fff8ef"
         }
       ],
       "expo-asset",
@@ -72,7 +73,8 @@
           "initialOrientation": "PORTRAIT_UP"
         }
       ],
-      "@react-native-google-signin/google-signin"
+      "@react-native-google-signin/google-signin",
+      "expo-system-ui"
     ],
     "experiments": {
       "typedRoutes": false
@@ -81,6 +83,11 @@
       "apiUrl": "https://dailer-api.vercel.app",
       "googleWebClientId": "670356555721-ufek4lt8hirc6skeomm5c3ebiet0dt7b.apps.googleusercontent.com",
       "devApiUrl": "http://localhost:8010"
+    },
+    "backgroundColor": "#fff8ef",
+    "androidStatusBar": {
+      "barStyle": "dark-content",
+      "backgroundColor": "#fff8ef"
     }
   }
 }

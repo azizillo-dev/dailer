@@ -3,62 +3,62 @@ import { useColorScheme } from "react-native";
 import { prefs } from "./storage";
 
 /**
- * Asosiy ko'rinish — to'q espresso (qorong'i jigarrang) fon, karamel urg'u.
- * Yorug' (krem) rejim ham bor — profildan tanlanadi.
+ * "Krem tong": yorqin krem fon, oppoq kartalar, jonli o'rik-amber urg'u, toza yashil "bajarildi".
+ * Qorong'i rejim — jigarrang emas, iliq ko'mir. Standart holat — yorug' (profildan o'zgartiriladi).
  */
-const dark = {
-  bg: "#2b1d14",
-  surface: "#352419",
-  surface2: "#3f2c1f",
-  ink: "#f5ebdd",
-  inkSoft: "#cbb59c",
-  inkFaint: "#937b67",
-  line: "#4a3527",
-  accent: "#c9915e",
-  accentInk: "#2b1d14",
-  highlight: "#dba771",
-  success: "#9cb784",
-  danger: "#e3876b",
-  /** Eng to'q qatlam (motto, tashqi ramka). */
-  deep: "#1f140d",
-  cream: "#f5ebdd",
-  caramel: "#c9915e",
-  latte: "#e8d5bc",
+const light = {
+  bg: "#fff8ef",
+  surface: "#ffffff",
+  surface2: "#fdeedd",
+  ink: "#2a1f17",
+  inkSoft: "#6e5b4c",
+  inkFaint: "#a3907f",
+  line: "#f1e3d2",
+  accent: "#f28c45",
+  accentInk: "#2a1f17",
+  highlight: "#c4571e",
+  success: "#2f9e6b",
+  danger: "#d9483b",
+  /** Eng to'q qatlam (motto kartasi) — yorug' fonda ham kontrast beradi. */
+  deep: "#2a1f17",
+  cream: "#fff8ef",
+  caramel: "#f28c45",
+  latte: "#f9dfc4",
   /** Urg'u rangining shaffof foni (chip, ikonka doirasi). */
-  accentSoft: "rgba(201,145,94,0.16)",
-  overlay: "rgba(15,9,5,0.6)",
+  accentSoft: "rgba(242,140,69,0.14)",
+  overlay: "rgba(42,31,23,0.45)",
 };
 
-const light: typeof dark = {
-  bg: "#f5ece0",
-  surface: "#fffaf3",
-  surface2: "#efe2d0",
-  ink: "#2b1d14",
-  inkSoft: "#6f5847",
-  inkFaint: "#a08a77",
-  line: "#e3d3bf",
-  accent: "#4a3426",
-  accentInk: "#f7f0e6",
-  highlight: "#b07440",
-  success: "#5d7a4a",
-  danger: "#a5462f",
-  deep: "#2b1d14",
-  cream: "#f7f0e6",
-  caramel: "#c08552",
-  latte: "#e8d5bc",
-  accentSoft: "rgba(192,133,82,0.14)",
-  overlay: "rgba(43,29,20,0.45)",
+const dark: typeof light = {
+  bg: "#171411",
+  surface: "#211d19",
+  surface2: "#2b2621",
+  ink: "#fff4e8",
+  inkSoft: "#c9b8a6",
+  inkFaint: "#8f8072",
+  line: "#352e28",
+  accent: "#ff9a52",
+  accentInk: "#1a140f",
+  highlight: "#ffae6e",
+  success: "#4cc38a",
+  danger: "#ff7a66",
+  deep: "#0f0d0b",
+  cream: "#fff4e8",
+  caramel: "#ff9a52",
+  latte: "#f9dfc4",
+  accentSoft: "rgba(255,154,82,0.15)",
+  overlay: "rgba(0,0,0,0.6)",
 };
 
-export type Palette = typeof dark;
+export type Palette = typeof light;
 export type ThemeMode = "dark" | "light" | "system";
 
 type Ctx = { mode: ThemeMode; scheme: "dark" | "light"; setMode: (m: ThemeMode) => void };
-const ThemeCtx = createContext<Ctx>({ mode: "dark", scheme: "dark", setMode: () => {} });
+const ThemeCtx = createContext<Ctx>({ mode: "light", scheme: "light", setMode: () => {} });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const system = useColorScheme();
-  const [mode, setModeState] = useState<ThemeMode>("dark");
+  const [mode, setModeState] = useState<ThemeMode>("light");
   useEffect(() => {
     prefs.get("dailer.theme").then((v) => {
       if (v === "dark" || v === "light" || v === "system") setModeState(v);
