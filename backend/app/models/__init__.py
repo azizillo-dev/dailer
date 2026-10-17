@@ -39,6 +39,16 @@ from app.models.routine import (
     ScheduleMode,
     TaskTemplate,
 )
+from app.models.trackers import (
+    QURAN_PAGES,
+    Book,
+    BookStatus,
+    DhikrCounter,
+    DhikrLog,
+    QuranLog,
+    QuranProgress,
+    ReadingLog,
+)
 from app.models.user import (
     Device,
     EmailToken,
@@ -64,6 +74,14 @@ __all__ = [
     "AIReportKind",
     "AIRole",
     "AuditLog",
+    "Book",
+    "BookStatus",
+    "DhikrCounter",
+    "DhikrLog",
+    "QURAN_PAGES",
+    "QuranLog",
+    "QuranProgress",
+    "ReadingLog",
     "Challenge",
     "ChallengeKind",
     "ChallengeLog",

@@ -17,6 +17,7 @@ from app.api.routes import (
     notifications,
     routine,
     stats,
+    trackers,
 )
 from app.core.config import settings
 from app.core.errors import register_error_handlers
@@ -67,6 +68,7 @@ app.include_router(ai.router, prefix=API)
 app.include_router(challenges.router, prefix=API)
 app.include_router(notifications.router, prefix=API)
 app.include_router(journal.router, prefix=API)
+app.include_router(trackers.router, prefix=API)
 
 
 @app.get("/health", tags=["system"])

@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, Bell, CalendarCheck2, ListTodo, LogOut, Sparkles, Timer, Trophy, UserRound } from "lucide-react";
+import { BarChart3, Bell, BookOpen, CalendarCheck2, ListTodo, LogOut, Sparkles, Timer, Trophy, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -11,16 +11,19 @@ import { useAuth } from "@/lib/auth";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 import { applyTheme, storedTheme } from "@/lib/theme";
 
-const NAV: { href: string; label: MessageKey; icon: typeof ListTodo; mobile: boolean }[] = [
-  { href: "/today", label: "nav.today", icon: CalendarCheck2, mobile: true },
-  { href: "/stats", label: "nav.stats", icon: BarChart3, mobile: true },
-  { href: "/ai", label: "nav.ai", icon: Sparkles, mobile: true },
-  { href: "/focus", label: "nav.focus", icon: Timer, mobile: true },
-  { href: "/routine", label: "nav.routine", icon: ListTodo, mobile: false },
-  { href: "/challenges", label: "nav.challenges", icon: Trophy, mobile: false },
-  { href: "/profile", label: "nav.profile", icon: UserRound, mobile: true },
+const NAV: { href: string; label: MessageKey; icon: typeof ListTodo; mobile: boolean; desktop: boolean }[] = [
+  { href: "/today", label: "nav.today", icon: CalendarCheck2, mobile: true, desktop: true },
+  { href: "/stats", label: "nav.stats", icon: BarChart3, mobile: true, desktop: true },
+  { href: "/ai", label: "nav.ai", icon: Sparkles, mobile: true, desktop: true },
+  { href: "/focus", label: "nav.focus", icon: Timer, mobile: true, desktop: true },
+  { href: "/routine", label: "nav.routine", icon: ListTodo, mobile: false, desktop: true },
+  { href: "/trackers", label: "nav.trackers", icon: BookOpen, mobile: false, desktop: true },
+  { href: "/challenges", label: "nav.challenges", icon: Trophy, mobile: false, desktop: true },
+  // Kompyuterda profil — sarlavhadagi avatar orqali
+  { href: "/profile", label: "nav.profile", icon: UserRound, mobile: true, desktop: false },
 ];
 const MOBILE_NAV = NAV.filter((n) => n.mobile);
+const DESKTOP_NAV = NAV.filter((n) => n.desktop);
 
 function VerifyBanner() {
   const { t } = useI18n();
@@ -105,12 +108,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-30 border-b border-line/70 bg-bg/85 backdrop-blur-md">
         <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between gap-3 px-4 sm:px-6">
           <Logo href="/today" />
-          <nav className="hidden items-center gap-1 md:flex">
-            {NAV.map((n) => (
+          <nav className="hidden items-center gap-0.5 md:flex">
+            {DESKTOP_NAV.map((n) => (
               <Link
                 key={n.href}
                 href={n.href}
-                className={`rounded-full px-3 py-2 text-sm font-semibold transition-colors lg:px-4 ${
+                className={`whitespace-nowrap rounded-full px-2.5 py-2 text-sm font-semibold transition-colors lg:px-3 ${
                   pathname.startsWith(n.href) ? "bg-surface-2 text-ink" : "text-ink-soft hover:text-ink"
                 }`}
               >
@@ -119,9 +122,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             ))}
           </nav>
           <div className="flex items-center gap-2">
-            <div className="hidden lg:block">
+            <div className="hidden xl:block">
               <LangSwitch />
             </div>
+            <Link
+              href="/profile"
+              className="hidden h-10 w-10 place-items-center overflow-hidden rounded-full bg-surface-2 text-sm font-bold text-highlight ring-1 ring-line md:grid"
+              aria-label={t("nav.profile")}
+              title={t("nav.profile")}
+            >
+              {me.profile.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={me.profile.avatar_url} alt="" className="h-full w-full object-cover" />
+              ) : (
+                me.profile.full_name.slice(0, 1).toUpperCase()
+              )}
+            </Link>
             <Link
               href="/notifications"
               className="relative grid h-10 w-10 place-items-center rounded-full text-ink-soft ring-1 ring-line transition-colors hover:text-ink"

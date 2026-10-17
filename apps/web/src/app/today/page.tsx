@@ -265,6 +265,26 @@ function TodayView() {
         )}
       </div>
 
+      {/* Trekerlarga tez o'tish */}
+      <div className="mt-3 grid grid-cols-3 gap-2">
+        {[
+          { tab: "books", icon: "book", label: "tr.books" },
+          { tab: "quran", icon: "book-open", label: "tr.quran" },
+          { tab: "dhikr", icon: "sparkle", label: "tr.dhikr" },
+        ].map((x) => (
+          <Link
+            key={x.tab}
+            href={`/trackers?tab=${x.tab}`}
+            className="flex items-center justify-center gap-2 rounded-2xl bg-surface px-3 py-3 text-sm font-semibold ring-1 ring-line transition-colors hover:bg-surface-2"
+          >
+            <span className="text-highlight">
+              <ItemIcon name={x.icon} className="h-4 w-4" />
+            </span>
+            {t(x.label as MessageKey)}
+          </Link>
+        ))}
+      </div>
+
       {error && (
         <div className="mt-4">
           <FormMessage kind="error">{error}</FormMessage>
