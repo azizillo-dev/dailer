@@ -5,9 +5,11 @@ from pathlib import Path
 from fastapi import UploadFile
 from fastapi.concurrency import run_in_threadpool
 from PIL import Image, ImageOps, UnidentifiedImageError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.errors import AppError
+from app.models import StoredFile
 
 MAX_BYTES = 5 * 1024 * 1024
 ROOT = Path(settings.upload_dir)
@@ -33,26 +35,42 @@ def _process(data: bytes, size: tuple[int, int] | None, square: bool) -> bytes:
     return out.getvalue()
 
 
+def _in_db() -> bool:
+    return settings.upload_storage == "db"
+
+
 async def save_image(
-    file: UploadFile, folder: str, size: tuple[int, int] | None = None, square: bool = False
+    file: UploadFile, folder: str, db: AsyncSession, size: tuple[int, int] | None = None, square: bool = False
 ) -> str:
-    """Rasmni tekshiradi, kesadi/kichraytiradi, WEBP qilib saqlaydi. Nisbiy yo'lni qaytaradi."""
+    """Rasmni tekshiradi, kesadi/kichraytiradi, WEBP qilib saqlaydi. Nisbiy yo'lni qaytaradi.
+
+    Bazaga yozilganda commit chaqiruvchida (avatar bilan birga) qilinadi.
+    """
     data = await file.read(MAX_BYTES + 1)
     if len(data) > MAX_BYTES:
         raise AppError("file_too_large", 413)
     webp = await run_in_threadpool(_process, data, size, square)
+    rel = f"{folder}/{secrets.token_hex(12)}.webp"
+    if _in_db():
+        db.add(StoredFile(path=rel, data=webp, content_type="image/webp"))
+        return rel
     target = ROOT / folder
     target.mkdir(parents=True, exist_ok=True)
-    name = f"{secrets.token_hex(12)}.webp"
-    (target / name).write_bytes(webp)
-    return f"{folder}/{name}"
+    (ROOT / rel).write_bytes(webp)
+    return rel
 
 
-def remove(url: str | None) -> None:
+async def remove(url: str | None, db: AsyncSession) -> None:
     """Faqat o'zimiz yuklagan faylni o'chiradi (masalan Google avatari emas)."""
     prefix = public_url("")
     if not url or not url.startswith(prefix):
         return
-    path = (ROOT / url[len(prefix):]).resolve()
+    rel = url[len(prefix):]
+    if _in_db():
+        stored = await db.get(StoredFile, rel)
+        if stored:
+            await db.delete(stored)
+        return
+    path = (ROOT / rel).resolve()
     if ROOT.resolve() in path.parents and path.exists():
         path.unlink()

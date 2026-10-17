@@ -3,6 +3,7 @@ import { Lock, Mail, UserRound } from "lucide-react-native";
 import { useState } from "react";
 import { View } from "react-native";
 import { AuthLayout } from "@/components/AuthLayout";
+import { GoogleButton } from "@/components/GoogleButton";
 import { Button, Field, Message, Text } from "@/components/ui";
 import { api, errorText, type LoginResult } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
@@ -53,6 +54,13 @@ export default function Register() {
       <Field label={t("auth.password")} icon={Lock} value={password} onChangeText={setPassword} secureTextEntry autoComplete="new-password" placeholder="8+" />
       <Message kind="error">{error}</Message>
       <Button title={t("auth.register")} onPress={submit} loading={busy} disabled={!name || !email || password.length < 8} />
+      <GoogleButton
+        onResult={async (r) => {
+          // Yangi foydalanuvchi — index o'zi onboarding'ga yo'naltiradi
+          if (await acceptLogin(r)) router.replace("/");
+        }}
+        onError={(e) => setError(errorText(e, t("common.error"), t("common.network")))}
+      />
     </AuthLayout>
   );
 }

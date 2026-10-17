@@ -71,13 +71,15 @@
         {
           "initialOrientation": "PORTRAIT_UP"
         }
-      ]
+      ],
+      "@react-native-google-signin/google-signin"
     ],
     "experiments": {
       "typedRoutes": false
     },
     "extra": {
-      "apiUrl": "http://localhost:8010"
+      "apiUrl": "http://localhost:8010",
+      "googleWebClientId": ""
     }
   }
 }

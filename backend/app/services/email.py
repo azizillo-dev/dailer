@@ -1,7 +1,9 @@
 import logging
 from email.message import EmailMessage
+from email.utils import parseaddr
 
 import aiosmtplib
+import httpx
 
 from app.core.config import settings
 
@@ -55,25 +57,50 @@ async def send_template(kind: str, to: str, lang: str, name: str, url: str) -> N
     subject, heading, text, button = _TEMPLATES[kind].get(lang) or _TEMPLATES[kind]["uz"]
     heading = heading.format(name=name or "")
 
+    plain = f"{heading}\n\n{text}\n\n{button}: {url}\n\n{_FOOTER}"
+    html = _html(heading, text, button, url)
     msg = EmailMessage()
     msg["From"] = settings.mail_from
     msg["To"] = to
     msg["Subject"] = f"Dailer — {subject}"
-    msg.set_content(f"{heading}\n\n{text}\n\n{button}: {url}\n\n{_FOOTER}")
-    msg.add_alternative(_html(heading, text, button, url), subtype="html")
+    msg.set_content(plain)
+    msg.add_alternative(html, subtype="html")
 
     if settings.env == "test":
         outbox.append(msg)
         return
     try:
-        await aiosmtplib.send(
-            msg,
-            hostname=settings.smtp_host,
-            port=settings.smtp_port,
-            username=settings.smtp_user or None,
-            password=settings.smtp_password or None,
-            start_tls=settings.smtp_tls,
-        )
+        if settings.email_provider == "brevo":
+            await _send_brevo(to, msg["Subject"], html, plain)
+        else:
+            await aiosmtplib.send(
+                msg,
+                hostname=settings.smtp_host,
+                port=settings.smtp_port,
+                username=settings.smtp_user or None,
+                password=settings.smtp_password or None,
+                # 465 — darhol TLS, 587 — STARTTLS
+                use_tls=settings.smtp_port == 465,
+                start_tls=settings.smtp_tls and settings.smtp_port != 465,
+            )
     except Exception:
         # Email yuborilmasa ham so'rov yiqilmasin — log'ga yoziladi
         log.exception("Email yuborilmadi: %s → %s", kind, to)
+
+
+async def _send_brevo(to: str, subject: str, html: str, plain: str) -> None:
+    """Brevo transactional API (HTTPS, 443) — SMTP portlari yopiq bepul hostingda ham ishlaydi."""
+    name, address = parseaddr(settings.mail_from)
+    async with httpx.AsyncClient(timeout=15) as client:
+        r = await client.post(
+            "https://api.brevo.com/v3/smtp/email",
+            headers={"api-key": settings.brevo_api_key, "accept": "application/json"},
+            json={
+                "sender": {"name": name or "Dailer", "email": address},
+                "to": [{"email": to}],
+                "subject": subject,
+                "htmlContent": html,
+                "textContent": plain,
+            },
+        )
+        r.raise_for_status()

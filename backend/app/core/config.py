@@ -1,5 +1,7 @@
 from functools import lru_cache
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -9,6 +11,10 @@ class Settings(BaseSettings):
     env: str = "development"
 
     database_url: str = "postgresql+asyncpg://dailer:dailer@localhost:5433/dailer"
+    # Bepul Postgres (Supabase pooler) ulanishlar sonini cheklaydi
+    db_pool_size: int = 5
+    db_max_overflow: int = 10
+    # Bo'sh — Redis'siz (bitta server uchun xotiradagi o'rinbosar; bepul hostingda)
     redis_url: str = "redis://localhost:6379/0"
 
     jwt_secret: str = "dev-secret-change-me"
@@ -22,12 +28,17 @@ class Settings(BaseSettings):
     # API'ning tashqi manzili (yuklangan fayllar havolasi uchun)
     public_url: str = "http://localhost:8010"
     upload_dir: str = "uploads"
+    # disk — upload_dir papkasi; db — Postgres'da (diski vaqtinchalik bo'lgan bepul hosting uchun)
+    upload_storage: str = "disk"
     cors_origins: str = "http://localhost:3000"
 
     superadmin_email: str = "ceonabiyev@gmail.com"
 
     google_client_ids: str = ""
 
+    # smtp — SMTP server (lokal Mailpit, Gmail); brevo — HTTPS API (SMTP portlari yopiq hostingda)
+    email_provider: str = "smtp"
+    brevo_api_key: str = ""
     smtp_host: str = "localhost"
     smtp_port: int = 1025
     smtp_user: str = ""
@@ -48,8 +59,27 @@ class Settings(BaseSettings):
     vapid_private_key: str = ""
     vapid_subject: str = "mailto:ceonabiyev@gmail.com"
 
+    # Tashqi cron (cron-job.org) /internal/cron'ni shu kalit bilan chaqiradi; bo'sh — o'chiq
+    cron_secret: str = ""
+
     verify_email_hours: int = 48
     reset_password_minutes: int = 30
+
+    @field_validator("database_url")
+    @classmethod
+    def _asyncpg_url(cls, v: str) -> str:
+        """Neon/Render beradigan postgres://...?sslmode=require manzilini asyncpg'ga moslaydi."""
+        parts = urlsplit(v)
+        scheme = parts.scheme
+        if scheme in ("postgres", "postgresql"):
+            scheme = "postgresql+asyncpg"
+        query = dict(parse_qsl(parts.query))
+        if "sslmode" in query:
+            mode = query.pop("sslmode")
+            if mode != "disable":
+                query["ssl"] = "require"
+        query.pop("channel_binding", None)  # asyncpg qo'llamaydi
+        return urlunsplit((scheme, parts.netloc, parts.path, urlencode(query), parts.fragment))
 
     @property
     def is_dev(self) -> bool:

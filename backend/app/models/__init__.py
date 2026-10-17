@@ -24,6 +24,7 @@ from app.models.content import (
     Motivation,
     MotivationCategory,
 )
+from app.models.files import StoredFile
 from app.models.focus import FocusKind, PomodoroSession
 from app.models.journal import DayReflection, StreakFreeze
 from app.models.notification import Notification, NotificationKind
@@ -104,6 +105,7 @@ __all__ = [
     "CheckinStatus",
     "DayReflection",
     "Device",
+    "StoredFile",
     "StreakFreeze",
     "EmailToken",
     "EmailTokenPurpose",

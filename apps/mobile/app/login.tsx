@@ -3,6 +3,7 @@ import { KeyRound, Lock, Mail } from "lucide-react-native";
 import { useState } from "react";
 import { View } from "react-native";
 import { AuthLayout } from "@/components/AuthLayout";
+import { GoogleButton } from "@/components/GoogleButton";
 import { Button, Field, Message, Text } from "@/components/ui";
 import { api, errorText, type LoginResult, type TokenPair } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
@@ -32,11 +33,14 @@ export default function Login() {
     }
   }
 
+  async function handle(r: LoginResult) {
+    if (await acceptLogin(r)) router.replace("/");
+    else if (r.requires_2fa && r.mfa_token) setMfa(r.mfa_token);
+  }
+
   const submit = () =>
     run(async () => {
-      const r = await api<LoginResult>("/api/v1/auth/login", { method: "POST", body: { email: email.trim(), password } });
-      if (await acceptLogin(r)) router.replace("/");
-      else if (r.requires_2fa && r.mfa_token) setMfa(r.mfa_token);
+      await handle(await api<LoginResult>("/api/v1/auth/login", { method: "POST", body: { email: email.trim(), password } }));
     });
 
   const verify = () =>
@@ -77,6 +81,7 @@ export default function Login() {
           </Link>
           <Message kind="error">{error}</Message>
           <Button title={t("auth.login")} onPress={submit} loading={busy} disabled={!email || !password} />
+          <GoogleButton onResult={(r) => run(() => handle(r))} onError={(e) => setError(errorText(e, t("common.error"), t("common.network")))} />
         </>
       )}
     </AuthLayout>

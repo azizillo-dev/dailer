@@ -19,6 +19,7 @@ from app.api.routes import (
     routine,
     screen_time,
     stats,
+    system,
     trackers,
 )
 from app.core.config import settings
@@ -54,11 +55,15 @@ async def language_middleware(request: Request, call_next):
 
 register_error_handlers(app)
 
-# Yuklangan fayllar (avatar, banner). Production'da CDN / obyekt saqlash ortida bo'ladi.
-Path(settings.upload_dir).mkdir(parents=True, exist_ok=True)
-app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads")
+# Yuklangan fayllar (avatar, banner): diskdan yoki (bepul hostingda) bazadan
+if settings.upload_storage == "db":
+    app.include_router(system.files_router)
+else:
+    Path(settings.upload_dir).mkdir(parents=True, exist_ok=True)
+    app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads")
 
 API = "/api/v1"
+app.include_router(system.router, prefix=API)
 app.include_router(auth.router, prefix=API)
 app.include_router(me.router, prefix=API)
 app.include_router(routine.router, prefix=API)

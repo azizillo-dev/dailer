@@ -1,0 +1,73 @@
+# Render Blueprint — Dailer API (bepul tarif).
+# Render → New → Blueprint → shu repo. "sync: false" qiymatlarni Render so'raydi.
+#
+# Bepul tarif cheklovlari va yechimlar:
+#  - SMTP portlari yopiq → email Brevo HTTPS API orqali (EMAIL_PROVIDER=brevo)
+#  - disk vaqtinchalik → rasmlar Postgres'da (UPLOAD_STORAGE=db)
+#  - alohida worker yo'q, 15 daqiqa so'rov bo'lmasa uxlaydi → cron-job.org har daqiqada
+#    POST /api/v1/internal/cron/tick (X-Cron-Secret) chaqiradi: ham vazifalar ishlaydi, ham server uyg'oq turadi
+#  - Redis yo'q → xotiradagi o'rinbosar (REDIS_URL bo'sh)
+services:
+  - type: web
+    name: dailer-api
+    runtime: python
+    plan: free
+    region: frankfurt
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips="*"
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: ENV
+        value: production
+      # Supabase → Connect → Session pooler (IPv4) manzili
+      - key: DATABASE_URL
+        sync: false
+      - key: DB_POOL_SIZE
+        value: "3"
+      - key: DB_MAX_OVERFLOW
+        value: "4"
+      - key: REDIS_URL
+        value: ""
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ENCRYPTION_KEY
+        generateValue: true
+      - key: CRON_SECRET
+        generateValue: true
+      - key: UPLOAD_STORAGE
+        value: db
+      # https://dailer-api.onrender.com kabi — Render bergan manzil
+      - key: PUBLIC_URL
+        sync: false
+      # Vercel'dagi sayt manzili
+      - key: WEB_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: SUPERADMIN_EMAIL
+        value: ceonabiyev@gmail.com
+      - key: GOOGLE_CLIENT_IDS
+        sync: false
+      - key: EMAIL_PROVIDER
+        value: brevo
+      - key: BREVO_API_KEY
+        sync: false
+      # "Dailer <siz@gmail.com>" — Brevo'da tasdiqlangan jo'natuvchi
+      - key: MAIL_FROM
+        sync: false
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: DEEPSEEK_API_KEY
+        sync: false

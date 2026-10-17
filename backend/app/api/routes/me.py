@@ -46,8 +46,8 @@ async def complete_onboarding(body: OnboardingIn, user: CurrentUser, db: DB):
 
 @router.post("/avatar", response_model=MeOut)
 async def upload_avatar(user: CurrentUser, db: DB, file: UploadFile = File(...)):
-    rel = await uploads.save_image(file, "avatars", size=(320, 320), square=True)
-    uploads.remove(user.profile.avatar_url)
+    rel = await uploads.save_image(file, "avatars", db, size=(320, 320), square=True)
+    await uploads.remove(user.profile.avatar_url, db)
     user.profile.avatar_url = uploads.public_url(rel)
     await db.commit()
     await db.refresh(user)
@@ -56,7 +56,7 @@ async def upload_avatar(user: CurrentUser, db: DB, file: UploadFile = File(...))
 
 @router.delete("/avatar", response_model=MeOut)
 async def delete_avatar(user: CurrentUser, db: DB):
-    uploads.remove(user.profile.avatar_url)
+    await uploads.remove(user.profile.avatar_url, db)
     user.profile.avatar_url = None
     await db.commit()
     await db.refresh(user)

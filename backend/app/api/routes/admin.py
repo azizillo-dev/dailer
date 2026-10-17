@@ -298,9 +298,10 @@ async def banner_stats(bid: uuid.UUID, db: DB, _: AdminUser, days: int = Query(d
 
 @router.post("/uploads")
 async def upload_image(
-    _: AdminUser, file: UploadFile = File(...), folder: str = Query(default="banners", pattern="^(banners|motivations)$")
+    _: AdminUser, db: DB, file: UploadFile = File(...), folder: str = Query(default="banners", pattern="^(banners|motivations)$")
 ):
-    rel = await uploads.save_image(file, folder, size=(1600, 1600))
+    rel = await uploads.save_image(file, folder, db, size=(1600, 1600))
+    await db.commit()
     return {"url": uploads.public_url(rel)}
 
 

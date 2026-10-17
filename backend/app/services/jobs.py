@@ -164,7 +164,7 @@ async def purge_deleted_accounts(db: AsyncSession, now_utc: datetime) -> int:
         )
     ).unique().all()
     for u in users:
-        uploads.remove(u.profile.avatar_url if u.profile else None)
+        await uploads.remove(u.profile.avatar_url if u.profile else None, db)
     if users:
         await db.execute(delete(User).where(User.id.in_([u.id for u in users])))
         await db.commit()
