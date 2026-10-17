@@ -52,8 +52,11 @@ export function GoogleButton({ onCredential }: { onCredential: (idToken: string)
           callback: (r) => callback.current(r.credential),
         });
         ref.current.innerHTML = "";
+        // Qorong'i mavzuda — qora tugma (oq tugma jigarrang fonda keskin ko'rinadi)
+        const t = document.documentElement.dataset.theme;
+        const dark = t === "dark" || (t !== "light" && window.matchMedia("(prefers-color-scheme: dark)").matches);
         window.google.accounts.id.renderButton(ref.current, {
-          theme: "outline",
+          theme: dark ? "filled_black" : "outline",
           size: "large",
           shape: "pill",
           width: ref.current.offsetWidth,
@@ -76,7 +79,8 @@ export function GoogleButton({ onCredential }: { onCredential: (idToken: string)
         {t("auth.or")}
         <span className="h-px flex-1 bg-line" />
       </div>
-      <div ref={ref} className="flex h-11 w-full justify-center" aria-label={t("auth.google")} />
+      {/* color-scheme: light — aks holda Google iframe'i qorong'i sahifada oq to'rtburchak fon bilan chiziladi */}
+      <div ref={ref} className="flex h-11 w-full justify-center" style={{ colorScheme: "light" }} aria-label={t("auth.google")} />
     </>
   );
 }
