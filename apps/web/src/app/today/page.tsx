@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ChevronLeft, ChevronRight, Minus, Plus } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, ListTodo, Minus, Plus } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
@@ -181,6 +181,14 @@ function TodayView() {
           </h1>
         </div>
         <div className="flex gap-1.5">
+          <Link
+            href="/routine"
+            className="grid h-10 w-10 place-items-center rounded-full ring-1 ring-line md:hidden"
+            aria-label={t("nav.routine")}
+            title={t("nav.routine")}
+          >
+            <ListTodo className="h-4 w-4" />
+          </Link>
           <button
             className="grid h-10 w-10 place-items-center rounded-full ring-1 ring-line disabled:opacity-30"
             onClick={() => setDate(addDays(date, -1))}

@@ -1,3 +1,11 @@
+from app.models.ai import (
+    AIConversation,
+    AIMessage,
+    AIProvider,
+    AIReport,
+    AIReportKind,
+    AIRole,
+)
 from app.models.content import (
     AuditLog,
     Banner,
@@ -40,6 +48,12 @@ from app.models.user import (
 )
 
 __all__ = [
+    "AIConversation",
+    "AIMessage",
+    "AIProvider",
+    "AIReport",
+    "AIReportKind",
+    "AIRole",
     "AuditLog",
     "Banner",
     "BannerEvent",

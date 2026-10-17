@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, CalendarCheck2, ListTodo, LogOut, Timer, UserRound } from "lucide-react";
+import { BarChart3, CalendarCheck2, ListTodo, LogOut, Sparkles, Timer, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -11,13 +11,15 @@ import { useAuth } from "@/lib/auth";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 import { applyTheme, storedTheme } from "@/lib/theme";
 
-const NAV: { href: string; label: MessageKey; icon: typeof ListTodo }[] = [
-  { href: "/today", label: "nav.today", icon: CalendarCheck2 },
-  { href: "/stats", label: "nav.stats", icon: BarChart3 },
-  { href: "/focus", label: "nav.focus", icon: Timer },
-  { href: "/routine", label: "nav.routine", icon: ListTodo },
-  { href: "/profile", label: "nav.profile", icon: UserRound },
+const NAV: { href: string; label: MessageKey; icon: typeof ListTodo; mobile: boolean }[] = [
+  { href: "/today", label: "nav.today", icon: CalendarCheck2, mobile: true },
+  { href: "/stats", label: "nav.stats", icon: BarChart3, mobile: true },
+  { href: "/ai", label: "nav.ai", icon: Sparkles, mobile: true },
+  { href: "/focus", label: "nav.focus", icon: Timer, mobile: true },
+  { href: "/routine", label: "nav.routine", icon: ListTodo, mobile: false },
+  { href: "/profile", label: "nav.profile", icon: UserRound, mobile: true },
 ];
+const MOBILE_NAV = NAV.filter((n) => n.mobile);
 
 function VerifyBanner() {
   const { t } = useI18n();
@@ -83,14 +85,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-dvh pb-24 md:pb-10">
       <header className="sticky top-0 z-30 border-b border-line/70 bg-bg/85 backdrop-blur-md">
-        <div className="mx-auto flex h-16 w-full max-w-3xl items-center justify-between gap-3 px-4 sm:px-6">
+        <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between gap-3 px-4 sm:px-6">
           <Logo href="/today" />
           <nav className="hidden items-center gap-1 md:flex">
             {NAV.map((n) => (
               <Link
                 key={n.href}
                 href={n.href}
-                className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                className={`rounded-full px-3 py-2 text-sm font-semibold transition-colors lg:px-4 ${
                   pathname.startsWith(n.href) ? "bg-surface-2 text-ink" : "text-ink-soft hover:text-ink"
                 }`}
               >
@@ -124,8 +126,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Mobil pastki navigatsiya */}
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden">
-        <div className="mx-auto grid max-w-md" style={{ gridTemplateColumns: `repeat(${NAV.length}, 1fr)` }}>
-          {NAV.map((n) => {
+        <div className="mx-auto grid max-w-md" style={{ gridTemplateColumns: `repeat(${MOBILE_NAV.length}, 1fr)` }}>
+          {MOBILE_NAV.map((n) => {
             const active = pathname.startsWith(n.href);
             const Icon = n.icon;
             return (

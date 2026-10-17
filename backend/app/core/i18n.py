@@ -100,6 +100,11 @@ MESSAGES: dict[str, dict[str, str]] = {
         "ru": "Данные введены неверно.",
         "en": "Invalid input.",
     },
+    "ai_limit_reached": {
+        "uz": "Bugungi AI savollar limiti tugadi. Ertaga yana yozing — statistikangiz esa doim ochiq.",
+        "ru": "Дневной лимит вопросов ИИ исчерпан. Пишите завтра — статистика доступна всегда.",
+        "en": "You've reached today's AI question limit. Come back tomorrow — your stats are always available.",
+    },
     "invalid_image": {
         "uz": "Rasm faylini o'qib bo'lmadi. JPG, PNG yoki WEBP yuklang.",
         "ru": "Не удалось прочитать изображение. Загрузите JPG, PNG или WEBP.",

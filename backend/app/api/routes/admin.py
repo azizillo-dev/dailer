@@ -2,13 +2,14 @@ import uuid
 from datetime import date, datetime, timedelta
 
 from fastapi import APIRouter, File, Query, Request, Response, UploadFile
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import Date, cast, func, or_, select
 
 from app.api.deps import DB, AdminUser
 from app.core.errors import AppError
 from app.core.security import now
 from app.models import (
+    AIProvider,
     AuditLog,
     Banner,
     BannerEvent,
@@ -29,6 +30,8 @@ from app.schemas.content import (
     MotivationUpdate,
 )
 from app.services import audit, uploads
+from app.services.ai import router as ai_router
+from app.services.redis import redis
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -299,6 +302,63 @@ async def upload_image(
 ):
     rel = await uploads.save_image(file, folder, size=(1600, 1600))
     return {"url": uploads.public_url(rel)}
+
+
+# --- AI provayderlar ---
+
+def _provider_row(p: AIProvider, cooldown: int, count: int) -> dict:
+    return {
+        "id": p.id, "code": p.code, "name": p.name, "model": p.model, "base_url": p.base_url,
+        "priority": p.priority, "enabled": p.enabled, "is_paid": p.is_paid,
+        "daily_request_cap": p.daily_request_cap, "api_key_env": p.api_key_env,
+        "has_key": bool(ai_router.api_key(p)), "cooldown_seconds": cooldown, "today_requests": count,
+    }
+
+
+@router.get("/ai/providers")
+async def ai_providers(db: DB, _: AdminUser):
+    rows = (await db.scalars(select(AIProvider).order_by(AIProvider.priority))).all()
+    return [_provider_row(p, await ai_router.cooldown_left(p.code), await ai_router.today_count(p.code)) for p in rows]
+
+
+class ProviderPatch(BaseModel):
+    model: str | None = Field(default=None, min_length=1, max_length=128)
+    priority: int | None = Field(default=None, ge=0, le=1000)
+    enabled: bool | None = None
+    daily_request_cap: int | None = Field(default=None, ge=0)
+    clear_cooldown: bool = False
+
+
+@router.patch("/ai/providers/{pid}")
+async def update_provider(pid: uuid.UUID, body: ProviderPatch, db: DB, actor: AdminUser, request: Request):
+    p = await db.get(AIProvider, pid)
+    if p is None:
+        raise AppError("not_found", 404)
+    data = body.model_dump(exclude_unset=True, exclude={"clear_cooldown"})
+    for k, v in data.items():
+        setattr(p, k, v)
+    if body.clear_cooldown:
+        await redis.delete(f"ai:cooldown:{p.code}", f"ai:fail:{p.code}")
+    audit.record(db, actor, "ai_provider.update", "ai_provider", p.id, {**data, "clear_cooldown": body.clear_cooldown}, request)
+    await db.commit()
+    return _provider_row(p, await ai_router.cooldown_left(p.code), await ai_router.today_count(p.code))
+
+
+@router.post("/ai/providers/{pid}/test")
+async def test_provider(pid: uuid.UUID, db: DB, _: AdminUser):
+    p = await db.get(AIProvider, pid)
+    if p is None:
+        raise AppError("not_found", 404)
+    if not ai_router.api_key(p):
+        return {"ok": False, "error": f"{p.api_key_env} sozlanmagan"}
+    started = now()
+    try:
+        parts = []
+        async for token in ai_router._stream_one(p, [{"role": "user", "content": "O'zbekcha bitta qisqa jumla: salom!"}], 40):
+            parts.append(token)
+        return {"ok": True, "reply": "".join(parts)[:200], "ms": int((now() - started).total_seconds() * 1000)}
+    except ai_router.ProviderError as err:
+        return {"ok": False, "error": err.kind}
 
 
 # --- Audit ---

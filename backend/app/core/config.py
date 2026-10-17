@@ -35,6 +35,14 @@ class Settings(BaseSettings):
     smtp_tls: bool = False
     mail_from: str = "Dailer <no-reply@dailer.uz>"
 
+    # AI provayderlar kalitlari (bo'sh bo'lsa — o'sha provayder o'tkazib yuboriladi)
+    gemini_api_key: str = ""
+    groq_api_key: str = ""
+    openrouter_api_key: str = ""
+    deepseek_api_key: str = ""
+    xai_api_key: str = ""
+    ai_timeout_seconds: float = 20.0
+
     verify_email_hours: int = 48
     reset_password_minutes: int = 30
 
