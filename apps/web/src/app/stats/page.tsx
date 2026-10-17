@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Flame } from "lucide-react";
+import { ChevronLeft, ChevronRight, Flame, Share2 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
@@ -9,6 +9,8 @@ import { DeltaBadge, WeekBars, YearHeatmap, dateLong, type DayRow, type HeatDay 
 import { ItemIcon } from "@/components/ItemIcon";
 import { ProgressRing } from "@/components/ProgressRing";
 import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
+import { renderShareCard, shareOrDownload } from "@/lib/share-card";
 import { errorText } from "@/lib/errors";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 import { localISODate, type Category } from "@/lib/types";
@@ -60,6 +62,8 @@ function StatsView() {
     load(start);
   }, [start, load]);
 
+  const { me } = useAuth();
+  const [sharing, setSharing] = useState(false);
   const [freeze, setFreeze] = useState<{ left: number } | null>(null);
   const [candidates, setCandidates] = useState<{ date: string }[]>([]);
   const [freezeMsg, setFreezeMsg] = useState("");
@@ -85,6 +89,35 @@ function StatsView() {
           <h1 className="mt-1 font-serif text-3xl tracking-tight sm:text-4xl">{t("stats.title")}</h1>
         </div>
         <div className="flex gap-1.5">
+          {data && (
+            <button
+              className="grid h-10 w-10 place-items-center rounded-full ring-1 ring-line disabled:opacity-40"
+              aria-label={t("share.button")}
+              title={t("share.button")}
+              disabled={sharing}
+              onClick={async () => {
+                setSharing(true);
+                try {
+                  const blob = await renderShareCard({
+                    title: t("share.title"),
+                    score: data.total.score,
+                    scoreLabel: t("share.week"),
+                    streak: data.streak.current,
+                    streakLabel: t("share.streak"),
+                    range,
+                    categories: data.categories.map((c) => ({ label: t(`cat.${c.category}` as MessageKey), score: c.score })),
+                    goal: me?.profile.main_goal ?? null,
+                    motto: "Don't forget why you started!",
+                  });
+                  await shareOrDownload(blob, `dailer-${data.week_start}.png`, `${t("share.title")} · Dailer`);
+                } finally {
+                  setSharing(false);
+                }
+              }}
+            >
+              <Share2 className="h-4 w-4" />
+            </button>
+          )}
           <button
             className="grid h-10 w-10 place-items-center rounded-full ring-1 ring-line"
             onClick={() => data && setStart(shift(data.week_start, -7))}

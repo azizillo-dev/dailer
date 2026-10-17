@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AppShell } from "@/components/AppShell";
+import { Badges } from "@/components/Badges";
 import { ChallengeCard, type ChallengeSummary } from "@/components/ChallengeCard";
 import { PushToggle } from "@/components/PushToggle";
 import { FormMessage } from "@/components/AuthShell";
@@ -246,6 +247,8 @@ function ProfileView() {
           </Link>
         )}
       </section>
+
+      <Badges />
 
       {/* Challenge natijalari — profilda ko'rinadi */}
       <section className="animate-rise">

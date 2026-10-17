@@ -21,6 +21,81 @@ function daysLabel(mask: number, t: (k: MessageKey) => string) {
     .join(" ");
 }
 
+type Mode = { id: string; type: string; starts_on: string | null; ends_on: string | null; is_active: boolean };
+
+function RamadanCard({ onChange }: { onChange: () => void }) {
+  const { t } = useI18n();
+  const [mode, setMode] = useState<Mode | null | undefined>(undefined);
+  const [range, setRange] = useState({ starts_on: "", ends_on: "" });
+  const [error, setError] = useState("");
+
+  const load = useCallback(async () => {
+    const modes = await api<Mode[]>("/api/v1/modes", { auth: true });
+    const r = modes.find((m) => m.type === "ramadan") ?? null;
+    setMode(r);
+    if (r) setRange({ starts_on: r.starts_on ?? "", ends_on: r.ends_on ?? "" });
+  }, []);
+  useEffect(() => {
+    load().catch(() => setMode(null));
+  }, [load]);
+
+  if (mode === undefined) return null;
+
+  return (
+    <section className="card mt-8 p-5 sm:p-6">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="font-serif text-xl">🌙 {t("rm.title")}</h2>
+          <p className="mt-1 text-sm text-ink-soft">{t("rm.hint")}</p>
+        </div>
+        {mode && <span className="shrink-0 rounded-full bg-success/12 px-3 py-1 text-xs font-bold text-success">✓ {t("rm.enabled")}</span>}
+      </div>
+      <form
+        className="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          setError("");
+          try {
+            await api("/api/v1/modes/ramadan", { method: "POST", auth: true, body: range });
+            await load();
+            onChange();
+          } catch (err) {
+            setError(errorText(err, t));
+          }
+        }}
+      >
+        <label className="block">
+          <span className="mb-1.5 block text-xs font-semibold text-ink-soft">{t("rm.start")}</span>
+          <input type="date" className="field" required value={range.starts_on} onChange={(e) => setRange({ ...range, starts_on: e.target.value })} />
+        </label>
+        <label className="block">
+          <span className="mb-1.5 block text-xs font-semibold text-ink-soft">{t("rm.end")}</span>
+          <input type="date" className="field" required value={range.ends_on} onChange={(e) => setRange({ ...range, ends_on: e.target.value })} />
+        </label>
+        <button className="btn-primary">{mode ? t("common.save") : t("rm.enable")}</button>
+      </form>
+      {mode && (
+        <button
+          className="mt-3 text-xs font-semibold text-ink-faint hover:text-danger"
+          onClick={async () => {
+            await api(`/api/v1/modes/${mode.id}`, { method: "DELETE", auth: true });
+            setMode(null);
+            setRange({ starts_on: "", ends_on: "" });
+            onChange();
+          }}
+        >
+          {t("common.delete")}
+        </button>
+      )}
+      {error && (
+        <div className="mt-3">
+          <FormMessage kind="error">{error}</FormMessage>
+        </div>
+      )}
+    </section>
+  );
+}
+
 function RoutineView() {
   const { t, lang } = useI18n();
   const [items, setItems] = useState<RoutineItem[] | null>(null);
@@ -183,6 +258,8 @@ function RoutineView() {
           </li>
         ))}
       </ul>
+
+      <RamadanCard onChange={load} />
 
       <Sheet open={sheet === "templates"} onClose={close} title={t("routine.templates")}>
         <div className="-mx-1 mb-4 flex gap-2 overflow-x-auto px-1 pb-1">

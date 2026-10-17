@@ -7,7 +7,7 @@ from zoneinfo import ZoneInfo
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Checkin, CheckinStatus, RoutineItem, User
+from app.models import Checkin, CheckinStatus, ModeType, RoutineItem, ScheduleMode, User
 from app.services import prayer
 
 
@@ -71,8 +71,20 @@ async def build_day(db: AsyncSession, user: User, d: date) -> dict:
         if c is not None:
             counts[c.status] += 1
 
+    ramadan_mode = await db.scalar(
+        select(ScheduleMode).where(ScheduleMode.user_id == user.id, ScheduleMode.type == ModeType.ramadan)
+    )
+    ramadan = None
+    if ramadan_mode and ramadan_mode.applies_on(d):
+        ramadan = {
+            "day": (d - ramadan_mode.starts_on).days + 1 if ramadan_mode.starts_on else None,
+            "suhoor_ends": times.get("fajr"),
+            "iftar": times.get("maghrib"),
+        }
+
     return {
         "date": d,
+        "ramadan": ramadan,
         "prayer_times": times,
         "items": [
             {"item": item, "time": t, "checkin": c} for t, _, item, c in entries

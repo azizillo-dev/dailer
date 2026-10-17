@@ -6,6 +6,7 @@ from app.models.ai import (
     AIReportKind,
     AIRole,
 )
+from app.models.badges import UserBadge
 from app.models.challenge import (
     Challenge,
     ChallengeKind,
@@ -74,6 +75,7 @@ __all__ = [
     "AIReportKind",
     "AIRole",
     "AuditLog",
+    "UserBadge",
     "Book",
     "BookStatus",
     "DhikrCounter",

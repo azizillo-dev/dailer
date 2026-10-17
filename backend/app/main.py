@@ -9,6 +9,7 @@ from app.api.routes import (
     admin,
     ai,
     auth,
+    badges,
     challenges,
     content,
     focus,
@@ -69,6 +70,7 @@ app.include_router(challenges.router, prefix=API)
 app.include_router(notifications.router, prefix=API)
 app.include_router(journal.router, prefix=API)
 app.include_router(trackers.router, prefix=API)
+app.include_router(badges.router, prefix=API)
 
 
 @app.get("/health", tags=["system"])

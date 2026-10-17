@@ -233,6 +233,25 @@ function TodayView() {
         </div>
       </div>
 
+      {day?.ramadan && (
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-espresso px-5 py-4 text-cream">
+          <div>
+            <p className="font-serif text-lg">🌙 {t("rm.day", { n: day.ramadan.day ?? "" })}</p>
+            <p className="text-sm text-cream/75">
+              {day.ramadan.suhoor_ends && t("rm.suhoor", { t: hm(day.ramadan.suhoor_ends) })} ·{" "}
+              {day.ramadan.iftar && t("rm.iftar", { t: hm(day.ramadan.iftar) })}
+            </p>
+          </div>
+          {date === today && day.ramadan.iftar && minutesOf(day.ramadan.iftar) > nowMin && (
+            <span className="rounded-full bg-caramel px-3 py-1.5 text-sm font-bold text-espresso">
+              {t("rm.left", {
+                t: `${Math.floor((minutesOf(day.ramadan.iftar) - nowMin) / 60)}:${String((minutesOf(day.ramadan.iftar) - nowMin) % 60).padStart(2, "0")}`,
+              })}
+            </span>
+          )}
+        </div>
+      )}
+
       <div className="mt-6 grid gap-3 sm:grid-cols-[1fr_auto]">
         <div className="card flex items-center gap-5 p-5">
           <ProgressRing value={summary?.score != null ? summary.score / 100 : 0}>

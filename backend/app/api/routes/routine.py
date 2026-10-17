@@ -2,6 +2,7 @@ import uuid
 from datetime import date, timedelta
 
 from fastapi import APIRouter, Query, Response
+from pydantic import BaseModel, model_validator
 from sqlalchemy import func, select, update
 
 from app.api.deps import DB, CurrentUser
@@ -11,6 +12,8 @@ from app.models import (
     Category,
     Checkin,
     CheckinSource,
+    ModeType,
+    PrayerName,
     RoutineItem,
     ScheduleMode,
     TaskTemplate,
@@ -88,9 +91,61 @@ async def update_mode(mode_id: uuid.UUID, body: ModeUpdate, db: DB, user: Curren
 @router.delete("/modes/{mode_id}", status_code=204)
 async def delete_mode(mode_id: uuid.UUID, db: DB, user: CurrentUser):
     mode = await _own_mode(db, user.id, mode_id)
-    await db.delete(mode)  # vazifalar mode_id=NULL bo'ladi (har kuni)
+    # Rejimga bog'langan vazifalar arxivlanadi — aks holda ular "har kuni"ga aylanib qolardi
+    await db.execute(
+        update(RoutineItem)
+        .where(RoutineItem.mode_id == mode.id, RoutineItem.archived_at.is_(None))
+        .values(archived_at=now(), is_active=False)
+    )
+    await db.delete(mode)
     await db.commit()
     return Response(status_code=204)
+
+
+class RamadanIn(BaseModel):
+    starts_on: date
+    ends_on: date
+
+    @model_validator(mode="after")
+    def check(self):
+        if not 20 <= (self.ends_on - self.starts_on).days + 1 <= 31:
+            raise ValueError("ramadan lasts 29-30 days")
+        return self
+
+
+RAMADAN_ITEMS = {
+    "uz": [("Saharlik", "fajr", -30, "coffee", "health"), ("Iftorlik", "maghrib", 0, "sunset", "health"),
+           ("Taroveh namozi", "isha", 20, "moon", "prayer")],
+    "ru": [("Сухур", "fajr", -30, "coffee", "health"), ("Ифтар", "maghrib", 0, "sunset", "health"),
+           ("Таравих", "isha", 20, "moon", "prayer")],
+    "en": [("Suhoor", "fajr", -30, "coffee", "health"), ("Iftar", "maghrib", 0, "sunset", "health"),
+           ("Tarawih prayer", "isha", 20, "moon", "prayer")],
+}
+
+
+@router.post("/modes/ramadan", response_model=ModeOut, status_code=201)
+async def enable_ramadan(body: RamadanIn, db: DB, user: CurrentUser):
+    """Ramazon rejimi: saharlik, iftorlik va taroveh namoz vaqtiga bog'lanib qo'shiladi."""
+    existing = await db.scalar(
+        select(ScheduleMode).where(ScheduleMode.user_id == user.id, ScheduleMode.type == ModeType.ramadan)
+    )
+    if existing:
+        existing.starts_on, existing.ends_on, existing.is_active = body.starts_on, body.ends_on, True
+        await db.commit()
+        return existing
+    lang = user.profile.language.value
+    name = {"uz": "Ramazon", "ru": "Рамадан", "en": "Ramadan"}.get(lang, "Ramazon")
+    mode = ScheduleMode(user_id=user.id, name=name, type=ModeType.ramadan, starts_on=body.starts_on, ends_on=body.ends_on)
+    db.add(mode)
+    await db.flush()
+    for i, (title, prayer_name, offset, icon, category) in enumerate(RAMADAN_ITEMS.get(lang, RAMADAN_ITEMS["uz"])):
+        db.add(RoutineItem(
+            user_id=user.id, mode_id=mode.id, title=title, category=Category(category), icon=icon,
+            prayer_name=PrayerName(prayer_name), time_from_prayer=True, prayer_offset_min=offset,
+            sort_order=-30 + i, reminder_enabled=True, reminder_offset_min=10 if prayer_name == "fajr" else 0,
+        ))
+    await db.commit()
+    return mode
 
 
 # --- Vazifalar ---

@@ -207,8 +207,15 @@ class DaySummary(BaseModel):
     score: float | None
 
 
+class RamadanDay(BaseModel):
+    day: int | None
+    suhoor_ends: time | None
+    iftar: time | None
+
+
 class DayOut(BaseModel):
     date: date
+    ramadan: RamadanDay | None = None
     prayer_times: dict[str, time]
     items: list[DayItemOut]
     summary: DaySummary

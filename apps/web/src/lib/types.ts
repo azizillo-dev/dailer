@@ -62,6 +62,7 @@ export type Checkin = {
 
 export type Day = {
   date: string;
+  ramadan: { day: number | null; suhoor_ends: string | null; iftar: string | null } | null;
   prayer_times: Record<string, string>;
   items: { item: RoutineItem; time: string | null; checkin: Checkin | null }[];
   summary: {
