@@ -43,6 +43,11 @@ class Settings(BaseSettings):
     xai_api_key: str = ""
     ai_timeout_seconds: float = 20.0
 
+    # Web Push (VAPID). Yaratish: python -m scripts.gen_vapid
+    vapid_public_key: str = ""
+    vapid_private_key: str = ""
+    vapid_subject: str = "mailto:ceonabiyev@gmail.com"
+
     verify_email_hours: int = 48
     reset_password_minutes: int = 30
 

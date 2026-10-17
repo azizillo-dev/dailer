@@ -322,6 +322,17 @@ export const appUz = {
   "lang.ko": "Koreys",
   "lang.tr": "Turk",
   "lang.other": "Boshqa",
+
+  "notif.title": "Bildirishnomalar",
+  "notif.empty": "Hozircha xabar yo'q. Kechki xulosa va eslatmalar shu yerda paydo bo'ladi.",
+  "notif.readAll": "Hammasini o'qildi deb belgilash",
+  "notif.push": "Push bildirishnomalar",
+  "notif.pushHint": "Kechki xulosa, oliy maqsad eslatmasi va boshqa xabarlar shu qurilmaga keladi.",
+  "notif.enable": "Yoqish",
+  "notif.disable": "O'chirish",
+  "notif.enabled": "Yoqilgan",
+  "notif.denied": "Brauzerda bloklangan — sayt sozlamalaridan ruxsat bering.",
+  "notif.unsupported": "Bu brauzer push bildirishnomalarni qo'llamaydi.",
 } as const;
 
 export type AppKey = keyof typeof appUz;
@@ -638,6 +649,16 @@ export const appRu: Record<AppKey, string> = {
   "lang.ko": "Корейский",
   "lang.tr": "Турецкий",
   "lang.other": "Другой",
+  "notif.title": "Уведомления",
+  "notif.empty": "Пока нет сообщений. Здесь появятся итоги дня и напоминания.",
+  "notif.readAll": "Отметить все прочитанными",
+  "notif.push": "Push-уведомления",
+  "notif.pushHint": "Итоги дня, напоминание о цели и другие сообщения будут приходить на это устройство.",
+  "notif.enable": "Включить",
+  "notif.disable": "Выключить",
+  "notif.enabled": "Включены",
+  "notif.denied": "Заблокировано в браузере — разрешите в настройках сайта.",
+  "notif.unsupported": "Этот браузер не поддерживает push-уведомления.",
 };
 
 export const appEn: Record<AppKey, string> = {
@@ -952,4 +973,14 @@ export const appEn: Record<AppKey, string> = {
   "lang.ko": "Korean",
   "lang.tr": "Turkish",
   "lang.other": "Other",
+  "notif.title": "Notifications",
+  "notif.empty": "No messages yet. Daily summaries and reminders will appear here.",
+  "notif.readAll": "Mark all as read",
+  "notif.push": "Push notifications",
+  "notif.pushHint": "Daily summaries, goal reminders and other messages will arrive on this device.",
+  "notif.enable": "Turn on",
+  "notif.disable": "Turn off",
+  "notif.enabled": "On",
+  "notif.denied": "Blocked in the browser — allow it in site settings.",
+  "notif.unsupported": "This browser doesn't support push notifications.",
 };

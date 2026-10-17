@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { ChallengeCard, type ChallengeSummary } from "@/components/ChallengeCard";
+import { PushToggle } from "@/components/PushToggle";
 import { FormMessage } from "@/components/AuthShell";
 import { api, setTokens, type Me, type TokenPair } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
@@ -325,6 +326,10 @@ function ProfileView() {
           />
         </Row>
       </Section>
+
+      <section className="animate-rise">
+        <PushToggle />
+      </section>
 
       <Section title={t("profile.prayer")}>
         <label className="flex items-center justify-between rounded-2xl bg-surface-2 px-4 py-3">

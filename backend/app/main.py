@@ -13,6 +13,7 @@ from app.api.routes import (
     content,
     focus,
     me,
+    notifications,
     routine,
     stats,
 )
@@ -63,6 +64,7 @@ app.include_router(content.router, prefix=API)
 app.include_router(admin.router, prefix=API)
 app.include_router(ai.router, prefix=API)
 app.include_router(challenges.router, prefix=API)
+app.include_router(notifications.router, prefix=API)
 
 
 @app.get("/health", tags=["system"])

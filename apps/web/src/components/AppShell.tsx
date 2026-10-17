@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, CalendarCheck2, ListTodo, LogOut, Sparkles, Timer, Trophy, UserRound } from "lucide-react";
+import { BarChart3, Bell, CalendarCheck2, ListTodo, LogOut, Sparkles, Timer, Trophy, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -64,6 +64,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }
   }, [lang, me, setLang]);
 
+  // O'qilmagan xabarlar soni: ochilganda, har daqiqada va xabar o'qilganda
+  const [unread, setUnread] = useState(0);
+  useEffect(() => {
+    if (!me) return;
+    const load = () =>
+      api<{ count: number }>("/api/v1/notifications/unread-count", { auth: true })
+        .then((r) => setUnread(r.count))
+        .catch(() => {});
+    load();
+    const id = setInterval(load, 60_000);
+    window.addEventListener("dailer:notifications", load);
+    return () => {
+      clearInterval(id);
+      window.removeEventListener("dailer:notifications", load);
+    };
+  }, [me]);
+
   // Yangi qurilmada profildagi mavzuni qo'llash
   useEffect(() => {
     if (me && storedTheme() === "system" && me.profile.theme !== "system") applyTheme(me.profile.theme);
@@ -102,9 +119,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             ))}
           </nav>
           <div className="flex items-center gap-2">
-            <div className="hidden sm:block">
+            <div className="hidden lg:block">
               <LangSwitch />
             </div>
+            <Link
+              href="/notifications"
+              className="relative grid h-10 w-10 place-items-center rounded-full text-ink-soft ring-1 ring-line transition-colors hover:text-ink"
+              aria-label={`${t("notif.title")}${unread ? ` (${unread})` : ""}`}
+              title={t("notif.title")}
+            >
+              <Bell className="h-4 w-4" />
+              {unread > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-highlight px-1 text-[10px] font-black text-espresso">
+                  {unread > 9 ? "9+" : unread}
+                </span>
+              )}
+            </Link>
             <button
               onClick={async () => {
                 await logout();

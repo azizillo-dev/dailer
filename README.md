@@ -34,6 +34,35 @@ npm run dev
 
 Lokal muhitda yuborilgan barcha xatlar (tasdiqlash, parolni tiklash) Mailpit'da ko'rinadi: http://localhost:8025
 
+### Fon vazifalari (kechki xulosa, eslatmalar)
+
+```bash
+cd backend
+.venv/Scripts/arq app.worker.WorkerSettings
+```
+
+Har daqiqada: kechki xulosa (foydalanuvchi belgilagan vaqtda), oliy maqsad eslatmasi, "ikki marta o'tkazmang".
+Har kuni 03:00 UTC: 30 kundan oshgan o'chirish so'rovlari.
+
+### Push bildirishnomalar (Web Push)
+
+```bash
+cd backend && .venv/Scripts/python -m scripts.gen_vapid
+```
+
+`VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` → `backend/.env`, `NEXT_PUBLIC_VAPID_PUBLIC_KEY` → `apps/web/.env.local`.
+
+### AI yordamchi
+
+`backend/.env` ga `GEMINI_API_KEY`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `DEEPSEEK_API_KEY` (bittasi ham yetadi).
+Kalit bo'lmasa — statistikaga asoslangan shablon javob ishlaydi. Tartib va modellar: `/admin/ai`.
+
+### Demo ma'lumot
+
+```bash
+cd backend && .venv/Scripts/python -m scripts.seed_demo   # demo@dailer.uz / Demo12345, 3 haftalik tarix
+```
+
 ### Super admin
 
 `backend/.env` dagi `SUPERADMIN_EMAIL` bilan ro'yxatdan o'ting va emailni tasdiqlang. Rol avtomatik beriladi. Yoki:

@@ -11,6 +11,7 @@ import { api, type Me } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { errorText } from "@/lib/errors";
 import { useI18n, type MessageKey } from "@/lib/i18n";
+import { enablePush } from "@/lib/push";
 import { hm, type PlanItem } from "@/lib/types";
 
 const USER_TYPES = ["university_student", "school_pupil", "worker", "freelancer", "entrepreneur", "other"] as const;
@@ -208,7 +209,8 @@ export default function OnboardingPage() {
 
   async function allowNotifications() {
     try {
-      if ("Notification" in window) await Notification.requestPermission();
+      // Push qo'llansa — obuna bo'lib, qurilmani serverga yozamiz; aks holda oddiy ruxsat
+      if ((await enablePush()) === "unsupported" && "Notification" in window) await Notification.requestPermission();
     } catch {}
     await next();
   }

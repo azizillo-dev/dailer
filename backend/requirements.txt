@@ -14,7 +14,9 @@ aiosmtplib==3.0.2
 google-auth==2.37.0
 requests==2.32.3
 python-multipart==0.0.20
-cryptography==44.0.0
+cryptography==50.0.2
 tzdata==2024.2
 pillow==11.0.0
 httpx==0.28.1
+arq==0.26.1
+pywebpush==2.0.1

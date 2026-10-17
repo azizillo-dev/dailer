@@ -24,6 +24,7 @@ from app.models.content import (
     MotivationCategory,
 )
 from app.models.focus import FocusKind, PomodoroSession
+from app.models.notification import Notification, NotificationKind
 from app.models.routine import (
     AlarmType,
     Category,
@@ -88,6 +89,8 @@ __all__ = [
     "Gender",
     "Language",
     "ModeType",
+    "Notification",
+    "NotificationKind",
     "Platform",
     "PrayerName",
     "Profile",
