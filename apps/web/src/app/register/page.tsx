@@ -26,7 +26,7 @@ export default function RegisterPage() {
     setBusy(true);
     try {
       const result = await fn();
-      if (await acceptLogin(result)) router.replace("/today");
+      if (await acceptLogin(result)) router.replace(result.requires_2fa_setup ? "/admin" : "/today");
       else router.replace("/login");
     } catch (err) {
       setError(errorText(err, t));

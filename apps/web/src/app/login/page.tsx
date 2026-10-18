@@ -24,7 +24,8 @@ export default function LoginPage() {
 
   async function handleResult(result: LoginResult) {
     if (await acceptLogin(result)) {
-      router.replace("/today");
+      // Admin, 2FA hali sozlanmagan — to'g'ri admin panelga (u yerda 2FA sozlash ekrani)
+      router.replace(result.requires_2fa_setup ? "/admin" : "/today");
     } else if (result.requires_2fa && result.mfa_token) {
       setMfaToken(result.mfa_token);
     }
@@ -61,7 +62,8 @@ export default function LoginPage() {
         body: { mfa_token: mfaToken, code },
       });
       await acceptTokens(tokens);
-      router.replace("/today");
+      // 2FA faqat adminlarda bor — kirgach admin panelga
+      router.replace("/admin");
     });
   };
 

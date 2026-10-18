@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, Bell, BookOpen, CalendarCheck2, Clock3, ListTodo, LogOut, Sparkles, Timer, Trophy, UserRound } from "lucide-react";
+import { BarChart3, Bell, BookOpen, CalendarCheck2, Clock3, ListTodo, ShieldCheck, LogOut, Sparkles, Timer, Trophy, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -138,6 +138,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 me.profile.full_name.slice(0, 1).toUpperCase()
               )}
             </Link>
+            {(me.role === "admin" || me.role === "super_admin") && (
+              <Link
+                href="/admin"
+                className="grid h-10 w-10 place-items-center rounded-full bg-espresso text-cream transition-opacity hover:opacity-90"
+                aria-label="Admin panel"
+                title="Admin panel"
+              >
+                <ShieldCheck className="h-4 w-4" />
+              </Link>
+            )}
             <Link
               href="/clock"
               className="grid h-10 w-10 place-items-center rounded-full text-ink-soft ring-1 ring-line transition-colors hover:text-ink"
