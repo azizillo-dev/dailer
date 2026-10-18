@@ -8,7 +8,7 @@ import { useI18n } from "@/lib/i18n";
 /** GitHub Releases — har doim oxirgi versiya (yangi release chiqqanda havola o'zgarmaydi). */
 export const APK_URL =
   process.env.NEXT_PUBLIC_ANDROID_APK_URL || "https://github.com/azizillo-dev/dailer/releases/latest/download/dailer.apk";
-export const APK_VERSION = process.env.NEXT_PUBLIC_ANDROID_APK_VERSION || "1.0.1";
+export const APK_VERSION = process.env.NEXT_PUBLIC_ANDROID_APK_VERSION || "1.0.2";
 export const APK_SIZE = process.env.NEXT_PUBLIC_ANDROID_APK_SIZE || "23 MB";
 
 const BAR_KEY = "dailer.dl.bar";
