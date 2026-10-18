@@ -1,10 +1,11 @@
 import * as Notifications from "expo-notifications";
 import { router, useFocusEffect } from "expo-router";
-import { Bell, ChevronRight, Globe, Languages, LogOut, Palette as PaletteIcon, Pencil } from "lucide-react-native";
+import * as WebBrowser from "expo-web-browser";
+import { Bell, ChevronRight, Globe, Languages, LogOut, Palette as PaletteIcon, Pencil, ShieldCheck } from "lucide-react-native";
 import { useCallback, useState } from "react";
-import { Image, Linking, Platform, Text as RNText, TextInput, View } from "react-native";
+import { Image, Platform, Text as RNText, TextInput, View } from "react-native";
 import { Button, Card, Press, Screen, Segment, Text } from "@/components/ui";
-import { api } from "@/lib/api";
+import { api, WEB_URL } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useI18n, type Lang } from "@/lib/i18n";
 import { ensurePermission, rescheduleWeek, setupCategories } from "@/lib/notifications";
@@ -133,7 +134,14 @@ export default function Profile() {
           </>
         )}
         <Divider />
-        <LinkRow icon={Globe} title={t("profile.web")} onPress={() => Linking.openURL("https://dailer.uz/profile")} />
+        <LinkRow icon={Globe} title={t("profile.web")} onPress={() => WebBrowser.openBrowserAsync(`${WEB_URL}/profile`)} />
+        {(me?.role === "admin" || me?.role === "super_admin") && (
+          <>
+            <Divider />
+            {/* Admin panel — saytda (2FA bilan); ilova ichidagi brauzerda ochiladi */}
+            <LinkRow icon={ShieldCheck} title={t("profile.admin")} value={t("profile.adminHint")} onPress={() => WebBrowser.openBrowserAsync(`${WEB_URL}/admin`)} />
+          </>
+        )}
       </Card>
 
       <Button

@@ -13,6 +13,8 @@ function resolveApiUrl(): string {
 }
 
 export const API_URL = resolveApiUrl();
+/** Sayt manzili — admin panel va to'liq sozlamalar shu yerda. */
+export const WEB_URL = (Constants.expoConfig?.extra as { webUrl?: string } | undefined)?.webUrl ?? "https://dailer-seven.vercel.app";
 const TOKENS = "dailer.auth";
 
 export type TokenPair = { access_token: string; refresh_token: string };

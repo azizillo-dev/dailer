@@ -58,6 +58,8 @@ export default function Register() {
         onResult={async (r) => {
           // Yangi foydalanuvchi — index o'zi onboarding'ga yo'naltiradi
           if (await acceptLogin(r)) router.replace("/");
+          // 2FA yoqilgan admin — kod kirish sahifasida so'raladi
+          else if (r.requires_2fa) router.replace("/login");
         }}
         onError={setError}
       />

@@ -3,7 +3,7 @@
     "name": "Dailer",
     "slug": "dailer",
     "scheme": "dailer",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -33,7 +33,7 @@
         "VIBRATE",
         "ACCESS_COARSE_LOCATION"
       ],
-      "versionCode": 2
+      "versionCode": 3
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -93,7 +93,8 @@
             "useLegacyPackaging": true
           }
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": false
@@ -101,7 +102,8 @@
     "extra": {
       "apiUrl": "https://dailer-api.vercel.app",
       "googleWebClientId": "670356555721-ufek4lt8hirc6skeomm5c3ebiet0dt7b.apps.googleusercontent.com",
-      "devApiUrl": "http://localhost:8010"
+      "devApiUrl": "http://localhost:8010",
+      "webUrl": "https://dailer-seven.vercel.app"
     },
     "backgroundColor": "#fff8ef",
     "androidStatusBar": {

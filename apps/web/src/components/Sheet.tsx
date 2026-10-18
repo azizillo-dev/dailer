@@ -33,18 +33,24 @@ export function Sheet({
     return () => clearTimeout(id);
   }, [open]);
 
+  // onClose odatda har renderda yangi funksiya (() => setX(null)) — ref orqali, effekt qayta ishga tushmasin.
+  // Aks holda har bir harf bosilganda panel.focus() inputdan fokusni tortib oladi va telefonda klaviatura yopiladi.
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && closeRef.current();
     document.addEventListener("keydown", onKey);
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    panel.current?.focus();
+    // Faqat ochilganda bir marta — ichidagi input allaqachon fokusda bo'lsa, tegmaymiz
+    if (!panel.current?.contains(document.activeElement)) panel.current?.focus();
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prev;
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!mounted) return null;
 
