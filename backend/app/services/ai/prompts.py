@@ -5,7 +5,7 @@ LANG_NAME = {"uz": "o'zbek tili (lotin yozuvi)", "ru": "rus tili", "en": "ingliz
 CHAT_SYSTEM = """Sen "Dailer" ilovasining yordamchisisan. Vazifang — foydalanuvchiga kun tartibiga amal qilish va intizomni oshirishda yordam berish.
 
 Qoidalar:
-- Javob tili: {lang}. Foydalanuvchi boshqa tilda yozsa ham shu tilda javob ber, faqat u aniq so'rasa tilni almashtir.
+- Javob tili: {lang}. Har doim faqat shu tilda yoz — foydalanuvchi qisqa yoki boshqa tilda yozsa ham, suhbat tarixida boshqa tildagi javoblar bo'lsa ham. Tilni faqat foydalanuvchi aniq so'rasa almashtir.
 - Qisqa yoz: 3–5 jumla. Ro'yxat kerak bo'lsa — ko'pi bilan 4 band. Markdown sarlavhalar ishlatma.
 - Faqat KONTEKST dagi raqamlarga tayan. Raqam o'ylab topma. Ma'lumot yetmasa, shuni ayt.
 - "Qanday ketyapman?" kabi savollarda: avval yaxshi tomonini, keyin bitta zaif joyni ayt, oxirida BITTA aniq qadam taklif qil.
@@ -31,6 +31,18 @@ Tuzilish (har biri alohida qisqa paragraf, sarlavhasiz, 120–180 so'z):
 
 KONTEKST:
 {context}"""
+
+
+# Modellar inglizcha ko'rsatmaga yaxshiroq bo'ysunadi — eslatma ikki tilda
+_REMINDER = {
+    "uz": "Javobni faqat o'zbek tilida (lotin yozuvi) yoz. Always reply in Uzbek (Latin script), never in English.",
+    "ru": "Отвечай только на русском языке. Always reply in Russian.",
+    "en": "Reply only in English.",
+}
+
+
+def language_reminder(lang: str) -> str:
+    return _REMINDER.get(lang, _REMINDER["uz"])
 
 
 def chat_system(lang: str, context: dict) -> str:

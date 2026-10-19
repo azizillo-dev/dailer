@@ -156,3 +156,26 @@ async def test_admin_providers(client, providers):
     assert res.json()["priority"] == 5
     rows = (await client.get(f"{API}/admin/ai/providers", headers=admin)).json()
     assert rows[0]["code"] == "gemini"
+
+
+async def test_reply_language_follows_ui(client, providers):
+    """Javob tili — interfeys tili (Accept-Language), profil tili emas; til eslatmasi oxirgi xabardan oldin."""
+    seen = []
+
+    def handler(request: httpx.Request):
+        seen.append(json.loads(request.content)["messages"])
+        return httpx.Response(200, content=sse("Ok"), headers={"content-type": "text/event-stream"})
+
+    ai_router.transport = httpx.MockTransport(handler)
+    h = auth((await register(client))["tokens"]["access_token"])
+    await client.patch(f"{API}/me/profile", json={"language": "en"}, headers=h)
+
+    await client.post(f"{API}/ai/chat", json={"message": "seni sevaman"}, headers={**h, "Accept-Language": "uz"})
+    msgs = seen[-1]
+    assert "o'zbek tili" in msgs[0]["content"]
+    assert msgs[-2]["role"] == "system" and "Uzbek" in msgs[-2]["content"]
+    assert msgs[-1] == {"role": "user", "content": "seni sevaman"}
+
+    # Sarlavha bo'lmasa — profil tili
+    await client.post(f"{API}/ai/chat", json={"message": "hi"}, headers=h)
+    assert "ingliz tili" in seen[-1][0]["content"]

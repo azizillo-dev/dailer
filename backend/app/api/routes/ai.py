@@ -4,13 +4,14 @@ import uuid
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from fastapi import APIRouter, Response
+from fastapi import APIRouter, Request, Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
 from app.api.deps import DB, CurrentUser
 from app.core.errors import AppError
+from app.core.i18n import pick_language
 from app.core.security import now
 from app.db.session import SessionLocal
 from app.models import AIConversation, AIMessage, AIReport, AIReportKind, AIRole
@@ -54,8 +55,14 @@ def _sse(event: str, data: dict) -> str:
     return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False, default=str)}\n\n"
 
 
+def _reply_lang(request: Request, user) -> str:
+    """Javob tili — foydalanuvchi hozir ko'rib turgan interfeys tili (har so'rovda keladi), bo'lmasa profil tili."""
+    header = request.headers.get("accept-language")
+    return pick_language(header) if header else user.profile.language.value
+
+
 @router.post("/chat")
-async def chat(body: ChatIn, db: DB, user: CurrentUser):
+async def chat(body: ChatIn, db: DB, user: CurrentUser, request: Request):
     used = int(await redis.get(_usage_key(user)) or 0)
     if used >= DAILY_LIMIT:
         raise AppError("ai_limit_reached", 429)
@@ -82,9 +89,11 @@ async def chat(body: ChatIn, db: DB, user: CurrentUser):
     await db.commit()
 
     context = await build_context(db, user)
-    lang = user.profile.language.value
+    lang = _reply_lang(request, user)
     messages = [{"role": "system", "content": prompts.chat_system(lang, context)}]
     messages += [{"role": m.role.value, "content": m.content} for m in reversed(history)]
+    # Tarixda boshqa tildagi javoblar bo'lsa ham model ergashib ketmasin — til qoidasi oxirida yana
+    messages.append({"role": "system", "content": prompts.language_reminder(lang)})
     messages.append({"role": "user", "content": body.message.strip()})
     conv_id, user_key = conv.id, _usage_key(user)
 
@@ -196,7 +205,7 @@ def _report_out(r: AIReport) -> dict:
 
 
 @router.post("/reports/weekly")
-async def weekly_report(db: DB, user: CurrentUser, response: Response):
+async def weekly_report(db: DB, user: CurrentUser, response: Response, request: Request):
     """Haftada bir marta. Shu hafta uchun hisobot bor bo'lsa — o'sha qaytariladi."""
     today = local_today(user.profile.timezone)
     week = st.week_start(today)
@@ -210,7 +219,7 @@ async def weekly_report(db: DB, user: CurrentUser, response: Response):
         return _report_out(existing)
 
     context = await build_context(db, user)
-    lang = user.profile.language.value
+    lang = _reply_lang(request, user)
     result = await ai.complete(
         db,
         [

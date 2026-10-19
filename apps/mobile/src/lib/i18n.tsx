@@ -488,9 +488,10 @@ export function translate(k: Key, vars?: Record<string, string | number>, lang: 
 type Ctx = { lang: Lang; setLang: (l: Lang) => void; t: (k: Key, vars?: Record<string, string | number>) => string };
 const I18n = createContext<Ctx | null>(null);
 
+/** Asosiy til — o'zbekcha. Telefon ruscha bo'lsa ruscha; ingliz tili faqat profilda tanlansa
+ * (aks holda inglizcha telefonli foydalanuvchi profili ham "en" bo'lib, AI va xabarlar inglizcha kelardi). */
 function deviceLang(): Lang {
-  const code = getLocales()[0]?.languageCode;
-  return code === "ru" || code === "en" ? code : "uz";
+  return getLocales()[0]?.languageCode === "ru" ? "ru" : "uz";
 }
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
