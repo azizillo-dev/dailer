@@ -6,6 +6,7 @@ import { Card, Press, Ring, Screen, SectionTitle, Text } from "@/components/ui";
 import { api } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import { fmtMinutes, syncScreenTime } from "@/lib/screenTime";
+import { WeekGrid, type WeekGridData } from "@/components/WeekGrid";
 import { fonts, radius, usePalette } from "@/lib/theme";
 
 type Weekly = {
@@ -34,11 +35,13 @@ export default function Stats() {
   const { t, lang } = useI18n();
   const c = usePalette();
   const [d, setD] = useState<Weekly | null>(null);
+  const [grid, setGrid] = useState<WeekGridData | null>(null);
   const [screen, setScreen] = useState<{ avg_min: number | null; delta_pct: number | null } | null>(null);
 
   useFocusEffect(
     useCallback(() => {
       api<Weekly>("/api/v1/stats/weekly", { auth: true }).then(setD).catch(() => {});
+      api<WeekGridData>("/api/v1/stats/week-grid", { auth: true }).then(setGrid).catch(() => {});
       syncScreenTime()
         .catch(() => {})
         .finally(() => api<{ avg_min: number | null; delta_pct: number | null }>("/api/v1/screen-time", { auth: true }).then(setScreen).catch(() => {}));
@@ -98,6 +101,8 @@ export default function Stats() {
               ))}
             </View>
           </Card>
+
+          {grid && <WeekGrid data={grid} />}
 
           {/* Ekran vaqti — batafsil sahifaga */}
           <Press onPress={() => router.push("/screen-time")} style={{ flexDirection: "row", alignItems: "center", gap: 12, padding: 14, borderRadius: radius.lg, backgroundColor: c.surface, borderWidth: 1, borderColor: c.line }}>

@@ -119,6 +119,17 @@ async def category_stats(
     }
 
 
+@router.get("/week-grid")
+async def week_grid(db: DB, user: CurrentUser, start: date | None = None):
+    """Haftalik jadval — vazifalar × kunlar, vazifa zanjirlari, mukammal kunlar."""
+    today = local_today(user.profile.timezone)
+    ws = st.week_start(start or today)
+    if ws > today:
+        raise AppError("validation_error", 422)
+    ctx = await st.load_context(db, user, min(ws - timedelta(days=7), today - timedelta(days=st.ITEM_STREAK_LOOKBACK)), today)
+    return st.week_grid(ctx, ws)
+
+
 @router.get("/streak")
 async def streak(db: DB, user: CurrentUser):
     today = local_today(user.profile.timezone)

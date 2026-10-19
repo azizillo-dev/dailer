@@ -141,3 +141,64 @@ def test_week_start():
 
     assert week_start(date(2026, 10, 18)) == date(2026, 10, 12)  # yakshanba → dushanba
     assert week_start(date(2026, 10, 12)) == date(2026, 10, 12)
+
+
+async def test_week_grid(client):
+    h, ids, uid = await setup_user(client)
+    today = local_today("Asia/Tashkent")
+    last_monday = today - timedelta(days=today.weekday()) - timedelta(days=7)
+    # Kitob — miqdorli: kuniga 10 bet
+    await client.patch(f"{API}/routine-items/{ids['reading']}", json={"target_value": 10, "unit": "bet"}, headers=h)
+
+    rows = []
+    for i in range(7):  # o'tgan hafta: namoz har kuni bajarilgan
+        rows.append((ids["prayer"], last_monday + timedelta(days=i), CheckinStatus.done))
+    # Kitob: dushanba bajarildi, seshanba qisman (4 bet), qolgani o'tkazilgan
+    rows.append((ids["reading"], last_monday, CheckinStatus.done))
+    await add_checkins(uid, rows)
+    stamp = datetime.now(UTC)
+    async with SessionLocal() as db:
+        db.add(Checkin(user_id=uid, routine_item_id=ids["reading"], date=last_monday + timedelta(days=1),
+                       status=CheckinStatus.partial, value=4, checked_at=stamp, updated_at=stamp))
+        await db.commit()
+
+    g = (await client.get(f"{API}/stats/week-grid?start={last_monday}", headers=h)).json()
+    assert g["week_start"] == last_monday.isoformat() and len(g["days"]) == 7
+    by = {r["title"]: r for r in g["rows"]}
+    pr, rd = by["Bomdod"], by["Kitob"]
+    assert [c["state"] for c in pr["cells"]] == ["done"] * 7 and pr["done"] == 7 and pr["scheduled"] == 7
+    assert [c["state"] for c in rd["cells"]][:3] == ["done", "partial", "missed"]
+    assert rd["cells"][1]["progress"] == 0.4 and rd["cells"][0]["progress"] == 1.0
+    assert rd["value"] == 14.0 and rd["value_target"] == 70.0 and rd["unit"] == "bet"
+    # Mukammal kun — faqat dushanba (ikkalasi ham bajarilgan)
+    assert g["perfect_days"] == 1
+    assert g["checkins"] == 9  # 7 namoz + 1 kitob + 1 qisman
+    # Namoz zanjiri: o'tgan hafta 7 kun, shu hafta belgilanmagan → bugun ochiq, kecha (agar shu haftada) uzilgan
+    assert g["best_streak"] is None or g["best_streak"]["title"] == "Bomdod"
+
+    # Kelajak haftasi — rad etiladi
+    nxt = today + timedelta(days=8)
+    assert (await client.get(f"{API}/stats/week-grid?start={nxt}", headers=h)).status_code == 422
+
+
+def test_item_streak_rules():
+    from types import SimpleNamespace
+    from zoneinfo import ZoneInfo
+
+    from app.services.stats import StatsContext, item_streak
+
+    today = date(2026, 10, 18)
+    item = SimpleNamespace(id=uuid.uuid4(), created_at=datetime(2026, 9, 1, tzinfo=UTC), archived_at=None,
+                           is_active=True, days_of_week=127, mode=None)
+    user = SimpleNamespace(profile=SimpleNamespace(timezone="Asia/Tashkent"))
+
+    def ck(d, s):
+        return SimpleNamespace(routine_item_id=item.id, date=d, status=s)
+
+    rows = [ck(today - timedelta(days=i), CheckinStatus.done) for i in (1, 2, 4)]
+    rows.append(ck(today - timedelta(days=3), CheckinStatus.excused))  # uzrli — uzmaydi
+    rows.append(ck(today - timedelta(days=5), CheckinStatus.missed))
+    ctx = StatsContext(user, [item], rows, today)
+    assert ctx.tz == ZoneInfo("Asia/Tashkent")
+    # Bugun ochiq (o'tkaziladi), 1,2 done, 3 uzrli, 4 done, 5 missed → 3
+    assert item_streak(ctx, item) == 3

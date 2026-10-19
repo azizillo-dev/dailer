@@ -215,3 +215,105 @@ def streak(ctx: StatsContext) -> dict:
                 run = 0
         d += timedelta(days=1)
     return {"current": current, "longest": max(longest, current), "threshold": STREAK_THRESHOLD}
+
+
+ITEM_STREAK_LOOKBACK = 120
+
+
+def item_streak(ctx: StatsContext, item: RoutineItem) -> int:
+    """Vazifaning o'z zanjiri: ketma-ket rejadagi kunlarda bajarilgan (bugun hali ochiq bo'lsa — uzilmaydi).
+
+    Uzrli va muzlatilgan kunlar zanjirni uzmaydi, lekin qo'shmaydi ham.
+    """
+    run = 0
+    d = ctx.today
+    limit = ctx.today - timedelta(days=ITEM_STREAK_LOOKBACK)
+    while d >= limit:
+        if not ctx.alive_on(item, d) or d in ctx.freezes:
+            d -= timedelta(days=1)
+            continue
+        c = ctx.checkins.get((item.id, d))
+        if c is None:
+            if d == ctx.today:
+                d -= timedelta(days=1)
+                continue
+            break
+        if c.status == CheckinStatus.done:
+            run += 1
+        elif c.status != CheckinStatus.excused:
+            break
+        d -= timedelta(days=1)
+    return run
+
+
+def week_grid(ctx: StatsContext, start: date) -> dict:
+    """Haftalik jadval: har bir vazifa × 7 kun (Streaks uslubi).
+
+    Kun holati: off (rejada yo'q) · future · open (bugun, hali belgilanmagan) · done · partial · missed · excused.
+    Miqdorli vazifalarda (target_value) — kun bo'yicha ulush (progress 0..1) va hafta jami (bet, daqiqa...).
+    """
+    days = [start + timedelta(days=i) for i in range(7)]
+    rows = []
+    for item in sorted(ctx.items, key=lambda i: (i.start_time is None, i.start_time or 0, i.sort_order)):
+        if not any(ctx.alive_on(item, d) for d in days):
+            continue
+        cells = []
+        done = scheduled = 0
+        value_sum = 0.0
+        target = float(item.target_value) if item.target_value else None
+        for d in days:
+            if not ctx.alive_on(item, d):
+                cells.append({"date": d, "state": "off", "progress": None})
+                continue
+            scheduled += 1
+            c = ctx.checkins.get((item.id, d))
+            progress = None
+            if d > ctx.today:
+                state = "future"
+            elif c is None:
+                state = "open" if d == ctx.today else "missed"
+            else:
+                state = c.status.value
+                if c.status == CheckinStatus.done:
+                    done += 1
+            if c is not None and target:
+                v = float(c.value) if c.value is not None else (target if c.status == CheckinStatus.done else 0.0)
+                value_sum += v
+                progress = round(min(1.0, v / target), 2)
+            elif state == "done":
+                progress = 1.0
+            elif state == "partial":
+                progress = 0.5
+            cells.append({"date": d, "state": state, "progress": progress})
+        rows.append({
+            "item_id": item.id,
+            "title": item.title,
+            "icon": item.icon,
+            "category": item.category.value,
+            "cells": cells,
+            "done": done,
+            "scheduled": scheduled,
+            "unit": item.unit if target else None,
+            "value": round(value_sum, 1) if target else None,
+            "value_target": round(target * scheduled, 1) if target else None,
+            "streak": item_streak(ctx, item),
+        })
+
+    week_days = [ctx.day(d) for d in days]
+    total, _ = summarize(week_days)
+    prev_total, _ = summarize([ctx.day(d - timedelta(days=7)) for d in days])
+    checkins = total.done + total.partial
+    prev_checkins = prev_total.done + prev_total.partial
+    best = max(rows, key=lambda r: r["streak"], default=None)
+    return {
+        "week_start": start,
+        "week_end": start + timedelta(days=6),
+        "rows": rows,
+        "days": [{"date": d.date, "score": d.total.score} for d in week_days],
+        "completion": total.score,
+        "checkins": checkins,
+        "prev_checkins": prev_checkins,
+        "checkins_delta_pct": round((checkins - prev_checkins) / prev_checkins * 100) if prev_checkins else None,
+        "perfect_days": sum(1 for d in week_days if d.total.planned and d.total.score == 100.0),
+        "best_streak": {"title": best["title"], "icon": best["icon"], "days": best["streak"]} if best and best["streak"] else None,
+    }

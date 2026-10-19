@@ -8,6 +8,7 @@ import { FormMessage } from "@/components/AuthShell";
 import { DeltaBadge, WeekBars, YearHeatmap, dateLong, type DayRow, type HeatDay } from "@/components/charts";
 import { ItemIcon } from "@/components/ItemIcon";
 import { ProgressRing } from "@/components/ProgressRing";
+import { WeekGrid } from "@/components/WeekGrid";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { renderShareCard, shareOrDownload } from "@/lib/share-card";
@@ -201,6 +202,9 @@ function StatsView() {
               )}
             </div>
           </div>
+
+          {/* Hafta jadvali — vazifalar × kunlar */}
+          <WeekGrid start={data.week_start} weekLabel={range} />
 
           {/* Kunlar bo'yicha */}
           <section className="card animate-rise mt-3 p-5 sm:p-6" style={{ animationDelay: "0.1s" }}>
